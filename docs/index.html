@@ -1,1285 +1,1730 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Powerlifting App</title>
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- React, ReactDOM, Babel CDN -->
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <!-- Recharts CDN -->
-  <script src="https://unpkg.com/recharts@2.8.0/umd/Recharts.js"></script>
-  <!-- Lucide React CDN -->
-  <script src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Periodization Powerlifting</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #7c3aed 50%, #1e293b 100%);
+            min-height: 100vh;
+            padding: 1rem;
+            color: white;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-title h1 {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .header-title p {
+            color: #c084fc;
+            font-size: 1rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            color: white;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-purple { background: #7c3aed; }
+        .btn-purple:hover { background: #6d28d9; }
+        .btn-blue { background: #2563eb; }
+        .btn-blue:hover { background: #1d4ed8; }
+        .btn-green { background: #16a34a; }
+        .btn-green:hover { background: #15803d; }
+        .btn-red { background: #dc2626; }
+        .btn-red:hover { background: #b91c1c; }
+        .btn-yellow { background: #ca8a04; }
+        .btn-yellow:hover { background: #a16207; }
+        .btn-orange { background: #ea580c; }
+        .btn-orange:hover { background: #c2410c; }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            color: white;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tab.active {
+            background: #7c3aed;
+        }
+
+        .tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .lift-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .deload-alert {
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid;
+        }
+
+        .deload-alert.severe {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+
+        .deload-alert.moderate {
+            background: rgba(251, 146, 60, 0.2);
+            border-color: rgba(251, 146, 60, 0.5);
+        }
+
+        .deload-alert.mild {
+            background: rgba(250, 204, 21, 0.2);
+            border-color: rgba(250, 204, 21, 0.5);
+        }
+
+        .max-input {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .input {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: #7c3aed;
+        }
+
+        .input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .weeks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .week-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .week-title {
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #c084fc;
+            margin-bottom: 1rem;
+        }
+
+        .estimate-box {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(251, 146, 60, 0.2) 100%);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .estimate-box.weekly {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .field-input {
+            width: 80px;
+            padding: 0.25rem;
+            text-align: center;
+            font-size: 0.875rem;
+        }
+
+        .field-input.small {
+            width: 60px;
+        }
+
+        .textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            font-size: 0.875rem;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .select {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 0.5rem;
+            padding: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .select option {
+            background: #1e293b;
+            color: white;
+        }
+
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .block-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .chart-container {
+            height: 400px;
+            position: relative;
+        }
+
+        .rpe-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .rpe-table th,
+        .rpe-table td {
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .rpe-table th {
+            color: #c084fc;
+            text-align: center;
+        }
+
+        .rpe-table td {
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+        }
+
+        .guide-text {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 0;
+        }
+
+        .empty-state svg {
+            width: 4rem;
+            height: 4rem;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 640px) {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header-actions {
+                justify-content: center;
+            }
+
+            .tabs {
+                justify-content: center;
+            }
+
+            .weeks-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .field-input {
+                width: 60px;
+            }
+
+            .field-input.small {
+                width: 50px;
+            }
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen">
-  <div id="root"></div>
-  <script type="text/babel">
-    // Use global variables instead of ES6 imports for browser compatibility
-    const { useState, useCallback } = React;
-    const { Download, Calculator, Dumbbell, TrendingUp } = LucideReact;
-    const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } = Recharts;
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="card">
+            <div class="header">
+                <div class="header-title">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2">
+                        <path d="m6.5 6.5 11 11"/>
+                        <path d="m21 21-1-1"/>
+                        <path d="m3 3 1 1"/>
+                        <path d="m18 22 4-4"/>
+                        <path d="m2 6 4-4"/>
+                        <path d="m3 10 7-7"/>
+                        <path d="m14 21 7-7"/>
+                    </svg>
+                    <div>
+                        <h1>Block Periodization</h1>
+                        <p id="blockNumber">Block 1</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-purple" onclick="exportData()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7,10 12,15 17,10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Backup
+                    </button>
+                    <label class="btn btn-blue" for="importFile">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
+                        </svg>
+                        Import
+                        <input type="file" id="importFile" class="file-input" accept=".json" onchange="importData(event)">
+                    </label>
+                    <button class="btn btn-green hidden" id="completeBlockBtn" onclick="completeBlock()">
+                        Complete Block
+                    </button>
+                    <button class="btn btn-red" onclick="resetProgram()">
+                        Reset Program
+                    </button>
+                </div>
+            </div>
 
-    const PowerliftingApp = () => {
-      // Mike Tuchscherer's RPE Chart (RPE to percentage at different rep ranges)
-      const tuchschererChart = {
-        1: { 6: 0.86, 7: 0.89, 8: 0.92, 9: 0.96, 10: 1.0 },
-        2: { 6: 0.84, 7: 0.87, 8: 0.90, 9: 0.94, 10: 0.97 },
-        3: { 6: 0.81, 7: 0.84, 8: 0.88, 9: 0.91, 10: 0.94 },
-        4: { 6: 0.79, 7: 0.82, 8: 0.85, 9: 0.89, 10: 0.92 },
-        5: { 6: 0.77, 7: 0.80, 8: 0.83, 9: 0.86, 10: 0.89 },
-        6: { 6: 0.75, 7: 0.78, 8: 0.81, 9: 0.84, 10: 0.87 },
-        7: { 6: 0.73, 7: 0.76, 8: 0.79, 9: 0.82, 10: 0.85 },
-        8: { 6: 0.71, 7: 0.74, 8: 0.77, 9: 0.80, 10: 0.83 },
-        9: { 6: 0.69, 7: 0.72, 8: 0.75, 9: 0.78, 10: 0.81 },
-        10: { 6: 0.67, 7: 0.70, 8: 0.73, 9: 0.76, 10: 0.79 }
-      };
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="setActiveTab('training')">Training</button>
+                <button class="tab" onclick="setActiveTab('deload')">Recovery</button>
+                <button class="tab" onclick="setActiveTab('history')">History</button>
+                <button class="tab" onclick="setActiveTab('chart')">Progress</button>
+            </div>
 
-      // Create initial training data with calculated weights
-      const createInitialData = () => {
-        const baseData = {
-          squat: {
-            currentMax: 140,
-            weeks: [
-              { week: 1, topSingle: { rpe: 6, actualReps: 1, actualRpe: 6 }, backoff: { sets: 3, reps: 5, rpe: 6, actualReps: 5, actualRpe: 6 }, notes: '' },
-              { week: 2, topSingle: { rpe: 7, actualReps: 1, actualRpe: 7 }, backoff: { sets: 3, reps: 4, rpe: 7, actualReps: 4, actualRpe: 7 }, notes: '' },
-              { week: 3, topSingle: { rpe: 8, actualReps: 1, actualRpe: 8 }, backoff: { sets: 3, reps: 3, rpe: 8, actualReps: 3, actualRpe: 8 }, notes: '' },
-              { week: 4, topSingle: { rpe: 9, actualReps: 1, actualRpe: 9 }, backoff: { sets: 3, reps: 3, rpe: 9, actualReps: 3, actualRpe: 9 }, notes: '' }
-            ]
-          },
-          bench: {
-            currentMax: 100,
-            weeks: [
-              { week: 1, topSingle: { rpe: 6, actualReps: 1, actualRpe: 6 }, backoff: { sets: 3, reps: 5, rpe: 6, actualReps: 5, actualRpe: 6 }, notes: '' },
-              { week: 2, topSingle: { rpe: 7, actualReps: 1, actualRpe: 7 }, backoff: { sets: 3, reps: 4, rpe: 7, actualReps: 4, actualRpe: 7 }, notes: '' },
-              { week: 3, topSingle: { rpe: 8, actualReps: 1, actualRpe: 8 }, backoff: { sets: 3, reps: 3, rpe: 8, actualReps: 3, actualRpe: 8 }, notes: '' },
-              { week: 4, topSingle: { rpe: 9, actualReps: 1, actualRpe: 9 }, backoff: { sets: 3, reps: 3, rpe: 9, actualReps: 3, actualRpe: 9 }, notes: '' }
-            ]
-          },
-          deadlift: {
-            currentMax: 180,
-            weeks: [
-              { week: 1, topSingle: { rpe: 6, actualReps: 1, actualRpe: 6 }, backoff: { sets: 3, reps: 5, rpe: 6, actualReps: 5, actualRpe: 6 }, notes: '' },
-              { week: 2, topSingle: { rpe: 7, actualReps: 1, actualRpe: 7 }, backoff: { sets: 3, reps: 4, rpe: 7, actualReps: 4, actualRpe: 7 }, notes: '' },
-              { week: 3, topSingle: { rpe: 8, actualReps: 1, actualRpe: 8 }, backoff: { sets: 3, reps: 3, rpe: 8, actualReps: 3, actualRpe: 8 }, notes: '' },
-              { week: 4, topSingle: { rpe: 9, actualReps: 1, actualRpe: 9 }, backoff: { sets: 3, reps: 3, rpe: 9, actualReps: 3, actualRpe: 9 }, notes: '' }
-            ]
-          }
+            <!-- Deload Alert -->
+            <div id="deloadAlert" class="deload-alert hidden">
+                <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                    <div id="deloadIcon" style="padding: 0.5rem; border-radius: 0.5rem; background: rgba(239, 68, 68, 0.3);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
+                        </svg>
+                    </div>
+                    <div style="flex: 1;">
+                        <h3 id="deloadTitle" style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.5rem;">Deload Recommended</h3>
+                        <div id="deloadContent" style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.9);"></div>
+                        <button class="btn btn-red" onclick="setActiveTab('deload')" style="margin-top: 0.75rem;">
+                            View Recovery Plan →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lift Selection (Training Tab Only) -->
+            <div id="liftTabs" class="lift-tabs">
+                <button class="tab active" onclick="setSelectedLift('squat')">Squat</button>
+                <button class="tab" onclick="setSelectedLift('bench')">Bench</button>
+                <button class="tab" onclick="setSelectedLift('deadlift')">Deadlift</button>
+            </div>
+        </div>
+
+        <!-- Training Tab -->
+        <div id="trainingTab">
+            <!-- Max Input -->
+            <div class="card">
+                <div class="max-input">
+                    <label style="font-weight: 500;">Starting <span id="liftLabel">Squat</span> Max:</label>
+                    <input type="number" id="maxInput" class="input field-input" placeholder="140" onchange="updateCurrentMax()">
+                    <span>kg</span>
+                    <button class="btn btn-green" onclick="autoCalculateWeights()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <path d="M9 9l6 6"/>
+                            <path d="M15 9l-6 6"/>
+                        </svg>
+                        Auto Calculate
+                    </button>
+                </div>
+                <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem;" id="blockInfo">
+                    Block 1: Training max 140kg. Next block will start at 120kg (current Week 2 weight).
+                </p>
+            </div>
+
+            <!-- Weeks Grid -->
+            <div class="card">
+                <h2 id="programTitle" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem;">
+                    Squat Program - Block 1
+                </h2>
+                <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem; margin-bottom: 1.5rem;">
+                    Complete all 4 weeks, then progress to the next block with updated training maxes
+                </p>
+                
+                <div class="weeks-grid" id="weeksGrid">
+                    <!-- Weeks will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Deload Tab -->
+        <div id="deloadTab" class="hidden">
+            <div class="card">
+                <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">Recovery Analysis</h2>
+                <div id="deloadAnalysis">
+                    <p style="text-align: center; color: rgba(255, 255, 255, 0.6);">Complete some training sessions to see recovery analysis</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Tab -->
+        <div id="historyTab" class="hidden">
+            <div class="card">
+                <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem;">Block Progression History</h2>
+                <div id="historyContent">
+                    <div class="empty-state">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
+                        </svg>
+                        <p style="color: rgba(255, 255, 255, 0.6); font-size: 1.125rem;">No completed blocks yet</p>
+                        <p style="color: rgba(255, 255, 255, 0.4); font-size: 0.875rem; margin-top: 0.5rem;">
+                            Complete your first block to see progression history here
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart Tab -->
+        <div id="chartTab" class="hidden">
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2">
+                        <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
+                    </svg>
+                    <h3 style="font-size: 1.25rem; font-weight: bold;">Strength Progression</h3>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="progressChart"></canvas>
+                </div>
+                
+                <div style="margin-top: 1rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.6);">
+                    <p>📈 Chart shows estimated 1RM progression across all completed blocks and current training</p>
+                    <p>💡 B1W1 = Block 1 Week 1, etc. Your next block Week 1 will start at previous block Week 2 weights</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- RPE Reference (Training Tab Only) -->
+        <div id="rpeReference">
+            <div class="card">
+                <h3 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 1rem;">RPE Chart (% of 1RM)</h3>
+                <div style="overflow-x: auto;">
+                    <table class="rpe-table">
+                        <thead>
+                            <tr>
+                                <th>Reps</th>
+                                <th>RPE 6</th>
+                                <th>RPE 7</th>
+                                <th>RPE 8</th>
+                                <th>RPE 9</th>
+                                <th>RPE 10</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>86%</td><td>89%</td><td>92%</td><td>96%</td><td>100%</td></tr>
+                            <tr><td>2</td><td>84%</td><td>87%</td><td>90%</td><td>94%</td><td>97%</td></tr>
+                            <tr><td>3</td><td>81%</td><td>84%</td><td>88%</td><td>91%</td><td>94%</td></tr>
+                            <tr><td>4</td><td>79%</td><td>82%</td><td>85%</td><td>89%</td><td>92%</td></tr>
+                            <tr><td>5</td><td>77%</td><td>80%</td><td>83%</td><td>86%</td><td>89%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Block Periodization Guide (Training Tab Only) -->
+        <div id="blockGuide">
+            <div class="card">
+                <h3 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 1rem;">Block Periodization Guide</h3>
+                <div class="guide-text" style="space-y: 0.5rem;">
+                    <p><strong>🔄 How Block Periodization Works:</strong></p>
+                    <p>1. Complete a 4-week block (RPE 6→7→8→9 progression)</p>
+                    <p>2. After Week 4, click <strong>"Complete Block"</strong> to auto-progress</p>
+                    <p>3. App adjusts your training max based on RPE performance</p>
+                    <p>4. <strong>Next block Week 1 ≈ Previous block Week 2 weights</strong> (if RPEs on target)</p>
+                    <p>5. Repeat the cycle for continuous progression</p>
+                    <p><strong>📊 Smart Autoregulation:</strong></p>
+                    <p>• RPEs on target → Normal progression</p>
+                    <p>• RPEs running high → Reduced progression or deload</p>
+                    <p>• RPEs running low → Increased progression</p>
+                    <p>💡 <strong>This is exactly how elite powerlifters periodize</strong> - responsive progression based on actual performance</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // RPE Chart Data
+        const tuchschererChart = {
+            1: { 6: 0.86, 7: 0.89, 8: 0.92, 9: 0.96, 10: 1.0 },
+            2: { 6: 0.84, 7: 0.87, 8: 0.90, 9: 0.94, 10: 0.97 },
+            3: { 6: 0.81, 7: 0.84, 8: 0.88, 9: 0.91, 10: 0.94 },
+            4: { 6: 0.79, 7: 0.82, 8: 0.85, 9: 0.89, 10: 0.92 },
+            5: { 6: 0.77, 7: 0.80, 8: 0.83, 9: 0.86, 10: 0.89 },
+            6: { 6: 0.75, 7: 0.78, 8: 0.81, 9: 0.84, 10: 0.87 },
+            7: { 6: 0.73, 7: 0.76, 8: 0.79, 9: 0.82, 10: 0.85 },
+            8: { 6: 0.71, 7: 0.74, 8: 0.77, 9: 0.80, 10: 0.83 },
+            9: { 6: 0.69, 7: 0.72, 8: 0.75, 9: 0.78, 10: 0.81 },
+            10: { 6: 0.67, 7: 0.70, 8: 0.73, 9: 0.76, 10: 0.79 }
         };
 
-        // Auto-calculate initial weights for all lifts
-        Object.keys(baseData).forEach(lift => {
-          const currentMax = baseData[lift].currentMax;
-          baseData[lift].weeks = baseData[lift].weeks.map(week => ({
-            ...week,
-            topSingle: {
-              ...week.topSingle,
-              weight: Math.round((currentMax * tuchschererChart[1][week.topSingle.rpe]) / 2.5) * 2.5
-            },
-            backoff: {
-              ...week.backoff,
-              weight: Math.round((currentMax * tuchschererChart[week.backoff.reps][week.backoff.rpe]) / 2.5) * 2.5
-            }
-          }));
-        });
+        // Global State
+        let trainingData = {};
+        let selectedLift = 'squat';
+        let currentBlock = 1;
+        let completedBlocks = [];
+        let activeTab = 'training';
+        let progressChart = null;
 
-        return baseData;
-      };
+        // Initialize app
+        function init() {
+            loadData();
+            updateUI();
+            renderWeeks();
+            updateDeloadAnalysis();
+            updateCompleteBlockButton();
+        }
 
-      const initialData = createInitialData();
+        // Create initial training data
+        function createInitialData() {
+            const baseData = {
+                squat: {
+                    currentMax: 140,
+                    weeks: [
+                        { week: 1, topSingle: { rpe: 6, actualReps: 1, actualRpe: 0 }, backoff: { sets: 3, reps: 5, rpe: 6, actualReps: 0, actualRpe: 0 }, notes: '' },
+                        { week: 2, topSingle: { rpe: 7, actualReps: 1, actualRpe: 0 }, backoff: { sets: 3, reps: 4, rpe: 7, actualReps: 0, actualRpe: 0 }, notes: '' },
+                        { week: 3, topSingle: { rpe: 8, actualReps: 1, actualRpe: 0 }, backoff: { sets: 3, reps: 3, rpe: 8, actualReps: 0, actualRpe: 0 }, notes: '' },
+                        { week: 4, topSingle: { rpe: 9, actualReps: 1, actualRpe: 0 }, backoff: { sets: 3, reps: 3, rpe: 9, actualReps: 0, actualRpe: 0 }, notes: '' }
+                    ]
+                },
+                bench: {
+                    currentMax: 100,
+                    weeks: [
+                        { week: 1, topSingle: { rpe: 6, actualReps: 1, actualRpe: 0 }, backoff: { sets: 3, reps: 5, rpe: 6, actualReps: 0, actualRpe: 0 }, notes: '' },
+                        { week: 2, topSingle: { rpe: 7, actualReps: 1, actualRpe: 0 }, backoff: { sets: 3, reps: 4, rpe: 7, actualReps: 0, actualRpe: 0 }, notes: '' },
+                        { week: 3, topSingle: { rpe: 8, actualReps: 1, actualRpe: 0 }, backoff: { sets: 3, reps: 3, rpe: 8, actualReps: 0, actualRpe: 0 }, notes: '' },
+                        { week: 4, topSingle: { rpe: 9, actualReps: 1, actualRpe: 0 }, backoff: { sets: 3, reps: 3, rpe: 9, actualReps: 0, actualRpe: 0 }, notes: '' }
+                    ]
+                },
+                deadlift: {
+                    currentMax: 180,
+                    weeks: [
+                        { week: 1, topSingle: { rpe: 6, actualReps: 1, actualRpe: 0 }, backoff: { sets: 3, reps: 5, rpe: 6, actualReps: 0, actualRpe: 0 }, notes: '' },
+                        { week: 2, topSingle: { rpe: 7, actualReps: 1, actualRpe: 0 }, backoff: { sets: 3, reps: 4, rpe: 7, actualReps: 0, actualRpe: 0 }, notes: '' },
+                        { week: 3, topSingle: { rpe: 8, actualReps: 1, actualRpe: 0 }, backoff: { sets: 3, reps: 3, rpe: 8, actualReps: 0, actualRpe: 0 }, notes: '' },
+                        { week: 4, topSingle: { rpe: 9, actualReps: 1, actualRpe: 0 }, backoff: { sets: 3, reps: 3, rpe: 9, actualReps: 0, actualRpe: 0 }, notes: '' }
+                    ]
+                }
+            };
 
-      const [trainingData, setTrainingData] = useState(initialData);
-      const [selectedLift, setSelectedLift] = useState('squat');
-      const [currentBlock, setCurrentBlock] = useState(1);
-      const [completedBlocks, setCompletedBlocks] = useState([]);
-      const [activeTab, setActiveTab] = useState('training');
+            // Auto-calculate initial weights
+            Object.keys(baseData).forEach(lift => {
+                const currentMax = baseData[lift].currentMax;
+                baseData[lift].weeks = baseData[lift].weeks.map(week => ({
+                    ...week,
+                    topSingle: {
+                        ...week.topSingle,
+                        weight: calculateWeight(currentMax, week.topSingle.rpe, 1)
+                    },
+                    backoff: {
+                        ...week.backoff,
+                        weight: calculateWeight(currentMax, week.backoff.rpe, week.backoff.reps)
+                    }
+                }));
+            });
 
-      // Deload detection system
-      const analyzeDeloadNeed = useCallback(() => {
-        const analysis = {
-          needsDeload: false,
-          severity: 'none', // 'none', 'mild', 'moderate', 'severe'
-          reasons: [],
-          suggestions: [],
-          affectedLifts: []
-        };
+            return baseData;
+        }
 
-        ['squat', 'bench', 'deadlift'].forEach(lift => {
-          const weeks = trainingData[lift].weeks;
-          const recentPerformance = [];
-          
-          // Collect recent RPE data
-          weeks.forEach((week, weekIndex) => {
-            if (week.topSingle.weight && week.topSingle.actualRpe) {
-              recentPerformance.push({
-                week: weekIndex + 1,
-                targetRPE: week.topSingle.rpe,
-                actualRPE: week.topSingle.actualRpe,
-                variance: week.topSingle.actualRpe - week.topSingle.rpe,
-                weight: week.topSingle.weight
-              });
-            }
-            if (week.backoff.weight && week.backoff.actualRpe) {
-              recentPerformance.push({
-                week: weekIndex + 1,
-                targetRPE: week.backoff.rpe,
-                actualRPE: week.backoff.actualRpe,
-                variance: week.backoff.actualRpe - week.backoff.rpe,
-                weight: week.backoff.weight,
-                type: 'backoff'
-              });
-            }
-          });
+        // Load data from localStorage
+        function loadData() {
+            const savedTrainingData = localStorage.getItem('powerlifting-training-data');
+            const savedSelectedLift = localStorage.getItem('powerlifting-selected-lift');
+            const savedCurrentBlock = localStorage.getItem('powerlifting-current-block');
+            const savedCompletedBlocks = localStorage.getItem('powerlifting-completed-blocks');
+            const savedActiveTab = localStorage.getItem('powerlifting-active-tab');
 
-          if (recentPerformance.length >= 2) {
-            const avgVariance = recentPerformance.reduce((sum, p) => sum + p.variance, 0) / recentPerformance.length;
-            const recentVariance = recentPerformance.slice(-3).reduce((sum, p) => sum + p.variance, 0) / Math.min(3, recentPerformance.slice(-3).length);
+            trainingData = savedTrainingData ? JSON.parse(savedTrainingData) : createInitialData();
+            selectedLift = savedSelectedLift || 'squat';
+            currentBlock = savedCurrentBlock ? parseInt(savedCurrentBlock) : 1;
+            completedBlocks = savedCompletedBlocks ? JSON.parse(savedCompletedBlocks) : [];
+            activeTab = savedActiveTab || 'training';
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('powerlifting-training-data', JSON.stringify(trainingData));
+            localStorage.setItem('powerlifting-selected-lift', selectedLift);
+            localStorage.setItem('powerlifting-current-block', currentBlock.toString());
+            localStorage.setItem('powerlifting-completed-blocks', JSON.stringify(completedBlocks));
+            localStorage.setItem('powerlifting-active-tab', activeTab);
+        }
+
+        // Calculate weight based on RPE and reps
+        function calculateWeight(currentMax, rpe, reps = 1) {
+            const repData = tuchschererChart[Math.min(reps, 10)];
+            if (!repData) return 0;
             
-            // Check for consistent RPE overshoot
-            const consistentOvershoot = recentPerformance.slice(-2).every(p => p.variance > 0.5);
-            const highVariance = avgVariance > 0.7;
-            const veryHighVariance = avgVariance > 1.2;
-            const escalatingRPEs = recentVariance > avgVariance + 0.3;
-
-            if (veryHighVariance) {
-              analysis.needsDeload = true;
-              analysis.severity = 'severe';
-              analysis.reasons.push(`${lift.charAt(0).toUpperCase() + lift.slice(1)} RPEs averaging +${avgVariance.toFixed(1)} above target`);
-              analysis.affectedLifts.push(lift);
-            } else if (highVariance && consistentOvershoot) {
-              analysis.needsDeload = true;
-              if (analysis.severity === 'none') analysis.severity = 'moderate';
-              analysis.reasons.push(`${lift.charAt(0).toUpperCase() + lift.slice(1)} consistently overshooting RPE targets`);
-              analysis.affectedLifts.push(lift);
-            } else if (escalatingRPEs && avgVariance > 0.4) {
-              analysis.needsDeload = true;
-              if (analysis.severity === 'none') analysis.severity = 'mild';
-              analysis.reasons.push(`${lift.charAt(0).toUpperCase() + lift.slice(1)} showing signs of accumulating fatigue`);
-              analysis.affectedLifts.push(lift);
-            }
-          }
-        });
-
-        // Generate suggestions based on severity
-        if (analysis.needsDeload) {
-          switch (analysis.severity) {
-            case 'severe':
-              analysis.suggestions = [
-                'Take a full deload week (50-60% of current weights)',
-                'Reduce volume by 50% for all lifts',
-                'Focus on technique and mobility work',
-                'Consider taking 2-3 complete rest days'
-              ];
-              break;
-            case 'moderate':
-              analysis.suggestions = [
-                'Deload affected lifts to 70% of current weights',
-                'Reduce volume by 30-40%',
-                'Maintain accessory work but reduce intensity',
-                'Prioritize sleep and recovery'
-              ];
-              break;
-            case 'mild':
-              analysis.suggestions = [
-                'Reduce intensity by 10-15% for 1 week',
-                'Keep same weights but aim for RPE 7-8 instead of 8-9',
-                'Add an extra rest day this week',
-                'Monitor closely - full deload if RPEs don\'t improve'
-              ];
-              break;
-          }
+            const percentage = repData[rpe];
+            if (!percentage) return 0;
+            
+            const calculatedWeight = currentMax * percentage;
+            return Math.round(calculatedWeight / 2.5) * 2.5;
         }
 
-        return analysis;
-      }, [trainingData]);
-
-      const deloadAnalysis = analyzeDeloadNeed();
-
-      // Calculate weight based on current max and RPE using Tuchscherer chart
-      const calculateWeight = useCallback((currentMax, rpe, reps = 1) => {
-        const repData = tuchschererChart[Math.min(reps, 10)];
-        if (!repData) return 0;
-        
-        const percentage = repData[rpe];
-        if (!percentage) return 0;
-        
-        const calculatedWeight = currentMax * percentage;
-        return Math.round(calculatedWeight / 2.5) * 2.5;
-      }, []);
-
-      // Calculate estimated 1RM using Tuchscherer RPE chart
-      const calculateEstimated1RM = useCallback((weight, reps, rpe) => {
-        if (!weight || !reps || !rpe) return 0;
-        
-        const repData = tuchschererChart[Math.min(reps, 10)];
-        if (!repData) return 0;
-        
-        const percentage = repData[rpe];
-        if (!percentage) return 0;
-        
-        const estimated1RM = weight / percentage;
-        return Math.round(estimated1RM / 2.5) * 2.5;
-      }, []);
-
-      // Calculate backoff weight based on estimated 1RM from top single
-      const calculateBackoffWeight = useCallback((topSingleWeight, topSingleReps, topSingleRpe, backoffReps, backoffRpe) => {
-        if (!topSingleWeight || !topSingleReps || !topSingleRpe) return 0;
-        
-        const estimated1RM = calculateEstimated1RM(topSingleWeight, topSingleReps, topSingleRpe);
-        return calculateWeight(estimated1RM, backoffRpe, backoffReps);
-      }, [calculateEstimated1RM, calculateWeight]);
-
-      const calculateWeeklyEstimated1RM = useCallback((week) => {
-        const estimates = [];
-        
-        if (week.topSingle.weight && week.topSingle.actualReps && week.topSingle.actualRpe) {
-          estimates.push(calculateEstimated1RM(week.topSingle.weight, week.topSingle.actualReps, week.topSingle.actualRpe));
+        // Calculate estimated 1RM
+        function calculateEstimated1RM(weight, reps, rpe) {
+            if (!weight || !reps || !rpe) return 0;
+            
+            const repData = tuchschererChart[Math.min(reps, 10)];
+            if (!repData) return 0;
+            
+            const percentage = repData[rpe];
+            if (!percentage) return 0;
+            
+            const estimated1RM = weight / percentage;
+            return Math.round(estimated1RM / 2.5) * 2.5;
         }
-        
-        if (week.backoff.weight && week.backoff.actualReps && week.backoff.actualRpe) {
-          estimates.push(calculateEstimated1RM(week.backoff.weight, week.backoff.actualReps, week.backoff.actualRpe));
-        }
-        
-        if (estimates.length === 0) return 0;
-        
-        if (estimates.length === 2) {
-          return Math.round(((estimates[0] * 0.7) + (estimates[1] * 0.3)) * 2) / 2;
-        }
-        
-        return estimates[0];
-      }, [calculateEstimated1RM]);
 
-      // Complete current block and start new one with progressed weights
-      const completeBlock = () => {
-        const blockData = {
-          blockNumber: currentBlock,
-          completedDate: new Date().toISOString(),
-          lifts: {}
-        };
+        // Calculate backoff weight based on top single
+        function calculateBackoffWeight(topSingleWeight, topSingleReps, topSingleRpe, backoffReps, backoffRpe) {
+            if (!topSingleWeight || !topSingleReps || !topSingleRpe) return 0;
+            
+            const estimated1RM = calculateEstimated1RM(topSingleWeight, topSingleReps, topSingleRpe);
+            return calculateWeight(estimated1RM, backoffRpe, backoffReps);
+        }
 
-        ['squat', 'bench', 'deadlift'].forEach(lift => {
-          const currentMax = trainingData[lift].currentMax;
-          
-          const currentWeek1 = calculateWeight(currentMax, 6, 1);
-          const currentWeek2 = calculateWeight(currentMax, 7, 1);
-          const currentWeek3 = calculateWeight(currentMax, 8, 1);
-          const currentWeek4 = calculateWeight(currentMax, 9, 1);
-          
-          const weeks = trainingData[lift].weeks;
-          const performanceData = [];
-          
-          weeks.forEach((week, index) => {
+        // Calculate weekly estimated 1RM
+        function calculateWeeklyEstimated1RM(week) {
+            const estimates = [];
+            
             if (week.topSingle.weight && week.topSingle.actualReps && week.topSingle.actualRpe) {
-              performanceData.push({
-                week: index + 1,
-                type: 'topSingle',
-                targetRPE: week.topSingle.rpe,
-                actualRPE: week.topSingle.actualRpe,
-                rpeVariance: week.topSingle.actualRpe - week.topSingle.rpe
-              });
+                estimates.push(calculateEstimated1RM(week.topSingle.weight, week.topSingle.actualReps, week.topSingle.actualRpe));
             }
             
             if (week.backoff.weight && week.backoff.actualReps && week.backoff.actualRpe) {
-              performanceData.push({
-                week: index + 1,
-                type: 'backoff',
-                targetRPE: week.backoff.rpe,
-                actualRPE: week.backoff.actualRpe,
-                rpeVariance: week.backoff.actualRpe - week.backoff.rpe
-              });
-            }
-          });
-          
-          let newTrainingMax;
-          let avgRPEVariance = 0;
-          
-          if (performanceData.length > 0) {
-            avgRPEVariance = performanceData.reduce((sum, data) => sum + data.rpeVariance, 0) / performanceData.length;
-            
-            const targetWeek1Weight = currentWeek2;
-            const baseNewMax = Math.round((targetWeek1Weight / tuchschererChart[1][6]) / 2.5) * 2.5;
-            
-            // Realistic progression adjustments based on lift type
-            let liftProgressionFactor = 1.0;
-            switch(lift) {
-              case 'squat':
-                liftProgressionFactor = 1.02; // ~2-3kg progression when things go well
-                break;
-              case 'bench':
-                liftProgressionFactor = 1.015; // ~1.5-2kg progression when things go well
-                break;
-              case 'deadlift':
-                liftProgressionFactor = 1.025; // ~3-4kg progression when things go well
-                break;
+                estimates.push(calculateEstimated1RM(week.backoff.weight, week.backoff.actualReps, week.backoff.actualRpe));
             }
             
-            let adjustmentFactor = liftProgressionFactor;
-            if (avgRPEVariance > 0.3) {
-              // RPEs running high - reduce or maintain
-              if (avgRPEVariance > 1.0) {
-                adjustmentFactor = 0.95; // Deload by 5%
-              } else if (avgRPEVariance > 0.7) {
-                adjustmentFactor = 0.98; // Very small deload
-              } else {
-                adjustmentFactor = 1.0; // Maintain weight
-              }
-            } else if (avgRPEVariance < -0.3) {
-              // RPEs running low - can push progression more
-              const extraProgression = Math.abs(avgRPEVariance) * 0.01;
-              adjustmentFactor = liftProgressionFactor + extraProgression;
+            if (estimates.length === 0) return 0;
+            
+            if (estimates.length === 2) {
+                return Math.round(((estimates[0] * 0.7) + (estimates[1] * 0.3)) * 2) / 2;
             }
             
-            newTrainingMax = Math.round((baseNewMax * adjustmentFactor) / 2.5) * 2.5;
-            
-            // Realistic safety bounds based on lift type
-            let maxIncrease, maxDecrease;
-            switch(lift) {
-              case 'squat':
-                maxIncrease = currentMax + 5; // Max 5kg increase per block
-                maxDecrease = Math.max(currentMax - 7.5, currentMax * 0.9);
-                break;
-              case 'bench':
-                maxIncrease = currentMax + 2.5; // Max 2.5kg increase per block  
-                maxDecrease = Math.max(currentMax - 5, currentMax * 0.9);
-                break;
-              case 'deadlift':
-                maxIncrease = currentMax + 7.5; // Max 7.5kg increase per block
-                maxDecrease = Math.max(currentMax - 10, currentMax * 0.9);
-                break;
-              default:
-                maxIncrease = currentMax + 2.5;
-                maxDecrease = Math.max(currentMax - 5, currentMax * 0.9);
-            }
-            
-            newTrainingMax = Math.max(maxDecrease, Math.min(maxIncrease, newTrainingMax));
-            
-          } else {
-            // No performance data - very conservative progression based on lift
-            let conservativeIncrease;
-            switch(lift) {
-              case 'squat':
-                conservativeIncrease = 2.5;
-                break;
-              case 'bench':
-                conservativeIncrease = 1.25; // Even smaller for bench
-                break;
-              case 'deadlift':
-                conservativeIncrease = 2.5;
-                break;
-              default:
-                conservativeIncrease = 1.25;
-            }
-            
-            const targetWeek1Weight = currentWeek2;
-            newTrainingMax = Math.round((targetWeek1Weight / tuchschererChart[1][6]) / 2.5) * 2.5;
-            
-            // Add small conservative increase
-            newTrainingMax = Math.round((newTrainingMax + conservativeIncrease) / 2.5) * 2.5;
-          }
-          
-          const newWeek1 = calculateWeight(newTrainingMax, 6, 1);
-          const newWeek2 = calculateWeight(newTrainingMax, 7, 1);
-          const newWeek3 = calculateWeight(newTrainingMax, 8, 1);
-          const newWeek4 = calculateWeight(newTrainingMax, 9, 1);
-          
-          blockData.lifts[lift] = {
-            oldMax: currentMax,
-            newMax: newTrainingMax,
-            progression: newTrainingMax - currentMax,
-            avgRPEVariance: avgRPEVariance,
-            performanceData: performanceData,
-            oldWeights: {
-              week1: currentWeek1,
-              week2: currentWeek2,
-              week3: currentWeek3, 
-              week4: currentWeek4
-            },
-            newWeights: {
-              week1: newWeek1,
-              week2: newWeek2,
-              week3: newWeek3,
-              week4: newWeek4
-            }
-          };
-        });
-
-        setCompletedBlocks(prev => [...prev, blockData]);
-        
-        const newTrainingData = createInitialData();
-        Object.keys(newTrainingData).forEach(lift => {
-          newTrainingData[lift].currentMax = blockData.lifts[lift].newMax;
-          newTrainingData[lift].weeks = newTrainingData[lift].weeks.map(week => ({
-            ...week, 
-            topSingle: {
-              ...week.topSingle,
-              weight: calculateWeight(blockData.lifts[lift].newMax, week.topSingle.rpe, 1)
-            },
-            backoff: {
-              ...week.backoff,
-              weight: calculateWeight(blockData.lifts[lift].newMax, week.backoff.rpe, week.backoff.reps)
-            },
-            notes: ''
-          }));
-        });
-        
-        setTrainingData(newTrainingData);
-        setCurrentBlock(prev => prev + 1);
-      };
-
-      const resetProgram = () => {
-        const freshData = createInitialData();
-        setTrainingData(freshData);
-        setCurrentBlock(1);
-        setCompletedBlocks([]);
-      };
-
-      const updateCurrentMax = (lift, newMax) => {
-        setTrainingData(prev => ({
-          ...prev,
-          [lift]: {
-            ...prev[lift],
-            currentMax: parseInt(newMax) || 0
-          }
-        }));
-      };
-
-      const updateWeight = (lift, weekIndex, exercise, field, newValue) => {
-        setTrainingData(prev => ({
-          ...prev,
-          [lift]: {
-            ...prev[lift],
-            weeks: prev[lift].weeks.map((week, index) => 
-              index === weekIndex 
-                ? {
-                    ...week,
-                    [exercise]: {
-                      ...week[exercise],
-                      [field]: field === 'weight' ? (parseFloat(newValue) || 0) : (parseInt(newValue) || 0)
-                    }
-                  }
-                : week
-            )
-          }
-        }));
-      };
-
-      const updateNotes = (lift, weekIndex, newNotes) => {
-        setTrainingData(prev => ({
-          ...prev,
-          [lift]: {
-            ...prev[lift],
-            weeks: prev[lift].weeks.map((week, index) => 
-              index === weekIndex 
-                ? { ...week, notes: newNotes }
-                : week
-            )
-          }
-        }));
-      };
-
-      const autoCalculateWeights = (lift) => {
-        const currentMax = trainingData[lift].currentMax;
-        setTrainingData(prev => ({
-          ...prev,
-          [lift]: {
-            ...prev[lift],
-            weeks: prev[lift].weeks.map(week => ({
-              ...week,
-              topSingle: {
-                ...week.topSingle,
-                weight: calculateWeight(currentMax, week.topSingle.rpe, 1)
-              },
-              backoff: {
-                ...week.backoff,
-                weight: calculateWeight(currentMax, week.backoff.rpe, week.backoff.reps)
-              }
-            }))
-          }
-        }));
-      };
-
-      const exportData = () => {
-        const exportObj = {
-          trainingData,
-          currentBlock,
-          completedBlocks,
-          exportDate: new Date().toISOString(),
-          programName: "Block Periodization Powerlifting Template"
-        };
-        
-        const dataStr = JSON.stringify(exportObj, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(dataBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `powerlifting-block-${currentBlock}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      };
-
-      const prepareChartData = () => {
-        const chartData = [];
-        
-        completedBlocks.forEach((block) => {
-          for (let weekNum = 1; weekNum <= 4; weekNum++) {
-            chartData.push({
-              week: `B${block.blockNumber}W${weekNum}`,
-              blockNumber: block.blockNumber,
-              weekNumber: weekNum,
-              squat: weekNum === 4 ? block.lifts.squat.oldWeights?.week4 || null : null,
-              bench: weekNum === 4 ? block.lifts.bench.oldWeights?.week4 || null : null,
-              deadlift: weekNum === 4 ? block.lifts.deadlift.oldWeights?.week4 || null : null
-            });
-          }
-        });
-        
-        for (let weekNum = 1; weekNum <= 4; weekNum++) {
-          const weekData = { 
-            week: `B${currentBlock}W${weekNum}`,
-            blockNumber: currentBlock,
-            weekNumber: weekNum
-          };
-          
-          ['squat', 'bench', 'deadlift'].forEach(lift => {
-            const week = trainingData[lift].weeks[weekNum - 1];
-            const estimate = calculateWeeklyEstimated1RM(week);
-            weekData[lift] = estimate > 0 ? estimate : null;
-          });
-          
-          chartData.push(weekData);
+            return estimates[0];
         }
-        
-        return chartData;
-      };
 
-      const currentLiftData = trainingData[selectedLift];
+        // Analyze deload need
+        function analyzeDeloadNeed() {
+            const analysis = {
+                needsDeload: false,
+                severity: 'none',
+                reasons: [],
+                suggestions: [],
+                affectedLifts: []
+            };
 
-      return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
-          <div className="max-w-7xl mx-auto">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 mb-6 border border-white/20">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
-                <div className="flex items-center gap-3">
-                  <Dumbbell className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400" />
-                  <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-white">Block Periodization</h1>
-                    <p className="text-sm sm:text-base text-purple-300">Block {currentBlock}</p>
-                  </div>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <button
-                    onClick={exportData}
-                    className="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm"
-                  >
-                    <Download className="w-3 h-3 sm:w-4 sm:h-4" />
-                    Export
-                  </button>
-                  {Object.values(trainingData).some(lift => 
-                    lift.weeks[3].topSingle.weight > 0 && lift.weeks[3].topSingle.actualRpe > 0
-                  ) && (
-                    <button
-                      onClick={completeBlock}
-                      className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm"
-                    >
-                      Complete Block
-                    </button>
-                  )}
-                  <button
-                    onClick={resetProgram}
-                    className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm"
-                  >
-                    Reset Program
-                  </button>
-                </div>
-              </div>
+            ['squat', 'bench', 'deadlift'].forEach(lift => {
+                const weeks = trainingData[lift].weeks;
+                const recentPerformance = [];
+                
+                weeks.forEach((week, weekIndex) => {
+                    if (week.topSingle.weight && week.topSingle.actualRpe) {
+                        recentPerformance.push({
+                            week: weekIndex + 1,
+                            targetRPE: week.topSingle.rpe,
+                            actualRPE: week.topSingle.actualRpe,
+                            variance: week.topSingle.actualRpe - week.topSingle.rpe,
+                            weight: week.topSingle.weight
+                        });
+                    }
+                    if (week.backoff.weight && week.backoff.actualRpe) {
+                        recentPerformance.push({
+                            week: weekIndex + 1,
+                            targetRPE: week.backoff.rpe,
+                            actualRPE: week.backoff.actualRpe,
+                            variance: week.backoff.actualRpe - week.backoff.rpe,
+                            weight: week.backoff.weight,
+                            type: 'backoff'
+                        });
+                    }
+                });
 
-              <div className="flex gap-1 sm:gap-2 mb-4 sm:mb-6">
-                {[
-                  { id: 'training', label: 'Training', icon: Dumbbell },
-                  { id: 'deload', label: 'Recovery', icon: TrendingUp },
-                  { id: 'history', label: 'History', icon: TrendingUp },
-                  { id: 'chart', label: 'Progress', icon: TrendingUp }
-                ].map(tab => {
-                  const Icon = tab.icon;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors text-xs sm:text-sm ${
-                        activeTab === tab.id
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-white/20 text-white hover:bg-white/30'
-                      }`}
-                    >
-                      <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </div>
+                if (recentPerformance.length >= 2) {
+                    const avgVariance = recentPerformance.reduce((sum, p) => sum + p.variance, 0) / recentPerformance.length;
+                    const recentVariance = recentPerformance.slice(-3).reduce((sum, p) => sum + p.variance, 0) / Math.min(3, recentPerformance.slice(-3).length);
+                    
+                    const consistentOvershoot = recentPerformance.slice(-2).every(p => p.variance > 0.5);
+                    const highVariance = avgVariance > 0.7;
+                    const veryHighVariance = avgVariance > 1.2;
+                    const escalatingRPEs = recentVariance > avgVariance + 0.3;
 
-              {/* Deload Detection Alert - Show on training tab if needed */}
-            {activeTab === 'training' && deloadAnalysis.needsDeload && (
-              <div className={`rounded-2xl p-4 sm:p-6 mb-6 border ${
-                deloadAnalysis.severity === 'severe' ? 'bg-red-500/20 border-red-400/50' :
-                deloadAnalysis.severity === 'moderate' ? 'bg-orange-500/20 border-orange-400/50' :
-                'bg-yellow-500/20 border-yellow-400/50'
-              }`}>
-                <div className="flex items-start gap-3">
-                  <div className={`p-2 rounded-lg ${
-                    deloadAnalysis.severity === 'severe' ? 'bg-red-500/30' :
-                    deloadAnalysis.severity === 'moderate' ? 'bg-orange-500/30' :
-                    'bg-yellow-500/30'
-                  }`}>
-                    <TrendingUp className={`w-5 h-5 ${
-                      deloadAnalysis.severity === 'severe' ? 'text-red-400' :
-                      deloadAnalysis.severity === 'moderate' ? 'text-orange-400' :
-                      'text-yellow-400'
-                    }`} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className={`text-lg font-bold mb-2 ${
-                      deloadAnalysis.severity === 'severe' ? 'text-red-400' :
-                      deloadAnalysis.severity === 'moderate' ? 'text-orange-400' :
-                      'text-yellow-400'
-                    }`}>
-                      {deloadAnalysis.severity === 'severe' ? '🛑 Deload Strongly Recommended' :
-                       deloadAnalysis.severity === 'moderate' ? '⚠️ Consider a Deload' :
-                       '📊 Recovery May Be Needed'}
-                    </h3>
-                    <div className="space-y-2 text-sm text-white/90">
-                      <div>
+                    if (veryHighVariance) {
+                        analysis.needsDeload = true;
+                        analysis.severity = 'severe';
+                        analysis.reasons.push(`${lift.charAt(0).toUpperCase() + lift.slice(1)} RPEs averaging +${avgVariance.toFixed(1)} above target`);
+                        analysis.affectedLifts.push(lift);
+                    } else if (highVariance && consistentOvershoot) {
+                        analysis.needsDeload = true;
+                        if (analysis.severity === 'none') analysis.severity = 'moderate';
+                        analysis.reasons.push(`${lift.charAt(0).toUpperCase() + lift.slice(1)} consistently overshooting RPE targets`);
+                        analysis.affectedLifts.push(lift);
+                    } else if (escalatingRPEs && avgVariance > 0.4) {
+                        analysis.needsDeload = true;
+                        if (analysis.severity === 'none') analysis.severity = 'mild';
+                        analysis.reasons.push(`${lift.charAt(0).toUpperCase() + lift.slice(1)} showing signs of accumulating fatigue`);
+                        analysis.affectedLifts.push(lift);
+                    }
+                }
+            });
+
+            // Generate suggestions based on severity
+            if (analysis.needsDeload) {
+                switch (analysis.severity) {
+                    case 'severe':
+                        analysis.suggestions = [
+                            'Take a full deload week (50-60% of current weights)',
+                            'Reduce volume by 50% for all lifts',
+                            'Focus on technique and mobility work',
+                            'Consider taking 2-3 complete rest days'
+                        ];
+                        break;
+                    case 'moderate':
+                        analysis.suggestions = [
+                            'Deload affected lifts to 70% of current weights',
+                            'Reduce volume by 30-40%',
+                            'Maintain accessory work but reduce intensity',
+                            'Prioritize sleep and recovery'
+                        ];
+                        break;
+                    case 'mild':
+                        analysis.suggestions = [
+                            'Reduce intensity by 10-15% for 1 week',
+                            'Keep same weights but aim for RPE 7-8 instead of 8-9',
+                            'Add an extra rest day this week',
+                            'Monitor closely - full deload if RPEs don\'t improve'
+                        ];
+                        break;
+                }
+            }
+
+            return analysis;
+        }
+
+        // Update UI elements
+        function updateUI() {
+            document.getElementById('blockNumber').textContent = `Block ${currentBlock}`;
+            document.getElementById('liftLabel').textContent = selectedLift.charAt(0).toUpperCase() + selectedLift.slice(1);
+            document.getElementById('maxInput').value = trainingData[selectedLift].currentMax;
+            document.getElementById('programTitle').textContent = `${selectedLift.charAt(0).toUpperCase() + selectedLift.slice(1)} Program - Block ${currentBlock}`;
+            
+            const blockInfo = document.getElementById('blockInfo');
+            const currentMax = trainingData[selectedLift].currentMax;
+            const nextBlockWeight = calculateWeight(currentMax, 7, 1);
+            blockInfo.textContent = `Block ${currentBlock}: Training max ${currentMax}kg. Next block will start at ${nextBlockWeight}kg (current Week 2 weight).`;
+
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`[onclick="setActiveTab('${activeTab}')"]`).classList.add('active');
+
+            // Update lift tabs
+            document.querySelectorAll('#liftTabs .tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`[onclick="setSelectedLift('${selectedLift}')"]`).classList.add('active');
+
+            // Show/hide content based on active tab
+            document.getElementById('trainingTab').classList.toggle('hidden', activeTab !== 'training');
+            document.getElementById('deloadTab').classList.toggle('hidden', activeTab !== 'deload');
+            document.getElementById('historyTab').classList.toggle('hidden', activeTab !== 'history');
+            document.getElementById('chartTab').classList.toggle('hidden', activeTab !== 'chart');
+            document.getElementById('liftTabs').classList.toggle('hidden', activeTab !== 'training');
+            document.getElementById('rpeReference').classList.toggle('hidden', activeTab !== 'training');
+            document.getElementById('blockGuide').classList.toggle('hidden', activeTab !== 'training');
+
+            if (activeTab === 'history') {
+                renderHistory();
+            } else if (activeTab === 'chart') {
+                renderChart();
+            } else if (activeTab === 'deload') {
+                renderDeloadTab();
+            }
+        }
+
+        // Set active tab
+        function setActiveTab(tab) {
+            activeTab = tab;
+            updateUI();
+            saveData();
+        }
+
+        // Set selected lift
+        function setSelectedLift(lift) {
+            selectedLift = lift;
+            updateUI();
+            renderWeeks();
+            saveData();
+        }
+
+        // Update current max
+        function updateCurrentMax() {
+            const newMax = parseInt(document.getElementById('maxInput').value) || 0;
+            trainingData[selectedLift].currentMax = newMax;
+            updateUI();
+            saveData();
+        }
+
+        // Auto calculate weights
+        function autoCalculateWeights() {
+            const currentMax = trainingData[selectedLift].currentMax;
+            trainingData[selectedLift].weeks = trainingData[selectedLift].weeks.map(week => ({
+                ...week,
+                topSingle: {
+                    ...week.topSingle,
+                    weight: calculateWeight(currentMax, week.topSingle.rpe, 1)
+                },
+                backoff: {
+                    ...week.backoff,
+                    weight: calculateWeight(currentMax, week.backoff.rpe, week.backoff.reps)
+                }
+            }));
+            renderWeeks();
+            saveData();
+        }
+
+        // Update weight field
+        function updateWeight(lift, weekIndex, exercise, field, value) {
+            if (field === 'weight') {
+                trainingData[lift].weeks[weekIndex][exercise][field] = parseFloat(value) || 0;
+            } else {
+                trainingData[lift].weeks[weekIndex][exercise][field] = parseInt(value) || 0;
+            }
+            renderWeeks();
+            updateDeloadAnalysis();
+            updateCompleteBlockButton();
+            saveData();
+        }
+
+        // Update notes
+        function updateNotes(lift, weekIndex, value) {
+            trainingData[lift].weeks[weekIndex].notes = value;
+            saveData();
+        }
+
+        // Render weeks grid
+        function renderWeeks() {
+            const weeksGrid = document.getElementById('weeksGrid');
+            const currentLiftData = trainingData[selectedLift];
+            
+            weeksGrid.innerHTML = '';
+            
+            currentLiftData.weeks.forEach((week, weekIndex) => {
+                const weeklyEstimate = calculateWeeklyEstimated1RM(week);
+                const topSingleEstimate = week.topSingle.weight && week.topSingle.actualReps && week.topSingle.actualRpe 
+                    ? calculateEstimated1RM(week.topSingle.weight, week.topSingle.actualReps, week.topSingle.actualRpe)
+                    : 0;
+                const suggestedBackoffWeight = calculateBackoffWeight(
+                    week.topSingle.weight, 
+                    week.topSingle.actualReps, 
+                    week.topSingle.actualRpe, 
+                    week.backoff.reps, 
+                    week.backoff.rpe
+                );
+
+                const weekCard = document.createElement('div');
+                weekCard.className = 'week-card';
+                weekCard.innerHTML = `
+                    <h3 class="week-title">Week ${week.week}</h3>
+                    
+                    ${topSingleEstimate > 0 ? `
+                        <div class="estimate-box">
+                            <div style="color: #fbbf24; font-size: 0.875rem; font-weight: 500;">Estimated 1RM</div>
+                            <div style="color: #f59e0b; font-size: 1.25rem; font-weight: bold;">${topSingleEstimate} kg</div>
+                            <div style="color: rgba(251, 191, 36, 0.8); font-size: 0.75rem; margin-top: 0.25rem;">Based on top single</div>
+                        </div>
+                    ` : ''}
+                    
+                    ${weeklyEstimate > 0 ? `
+                        <div class="estimate-box weekly">
+                            <div style="color: #22c55e; font-size: 0.875rem; font-weight: 500;">Week Average</div>
+                            <div style="color: #16a34a; font-size: 1.125rem; font-weight: bold;">${weeklyEstimate} kg</div>
+                        </div>
+                    ` : ''}
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 class="section-title">Top Single</h4>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;">
+                            <div class="field-row">
+                                <span style="color: rgba(255, 255, 255, 0.8);">Target RPE:</span>
+                                <span style="color: #c084fc; font-weight: bold;">${week.topSingle.rpe}</span>
+                            </div>
+                            <div class="field-row">
+                                <span style="color: rgba(255, 255, 255, 0.8);">Suggested:</span>
+                                <span style="color: #22c55e; font-weight: bold;">
+                                    ${calculateWeight(currentLiftData.currentMax, week.topSingle.rpe, 1)} kg
+                                </span>
+                            </div>
+                            <div class="field-row">
+                                <span style="color: rgba(255, 255, 255, 0.8);">Weight:</span>
+                                <input type="number" step="2.5" value="${week.topSingle.weight || ''}" 
+                                       class="input field-input" placeholder="140"
+                                       onchange="updateWeight('${selectedLift}', ${weekIndex}, 'topSingle', 'weight', this.value)">
+                            </div>
+                            <div class="field-row">
+                                <span style="color: rgba(255, 255, 255, 0.8);">Reps:</span>
+                                <input type="number" min="1" value="${week.topSingle.actualReps || ''}" 
+                                       class="input field-input small" placeholder="1"
+                                       onchange="updateWeight('${selectedLift}', ${weekIndex}, 'topSingle', 'actualReps', this.value)">
+                            </div>
+                            <div class="field-row">
+                                <span style="color: rgba(255, 255, 255, 0.8);">Actual RPE:</span>
+                                <select value="${week.topSingle.actualRpe || ''}" class="select field-input"
+                                        onchange="updateWeight('${selectedLift}', ${weekIndex}, 'topSingle', 'actualRpe', this.value)">
+                                    <option value="">Select</option>
+                                    <option value="6">RPE 6</option>
+                                    <option value="7">RPE 7</option>
+                                    <option value="8">RPE 8</option>
+                                    <option value="9">RPE 9</option>
+                                    <option value="10">RPE 10</option>
+                                </select>
+                            </div>
+                            ${week.topSingle.weight > 0 && week.topSingle.actualReps && week.topSingle.actualRpe ? `
+                                <div class="field-row" style="background: rgba(250, 204, 21, 0.1); padding: 0.5rem; border-radius: 0.25rem; border: 1px solid rgba(250, 204, 21, 0.2);">
+                                    <span style="color: #facc15; font-weight: 500;">→ Est. 1RM:</span>
+                                    <span style="color: #f59e0b; font-weight: bold;">
+                                        ${calculateEstimated1RM(week.topSingle.weight, week.topSingle.actualReps, week.topSingle.actualRpe)} kg
+                                    </span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="section-title">Back-off Sets</h4>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;">
+                            <div class="field-row">
+                                <span style="color: rgba(255, 255, 255, 0.8);">Sets × Reps:</span>
+                                <div style="display: flex; gap: 0.25rem; align-items: center;">
+                                    <input type="number" min="1" max="5" value="${week.backoff.sets || ''}" 
+                                           class="input field-input small" placeholder="3"
+                                           onchange="updateWeight('${selectedLift}', ${weekIndex}, 'backoff', 'sets', this.value)">
+                                    <span style="color: rgba(255, 255, 255, 0.8); font-size: 0.875rem;">×</span>
+                                    <input type="number" min="1" max="10" value="${week.backoff.reps || ''}" 
+                                           class="input field-input small" placeholder="5"
+                                           onchange="updateWeight('${selectedLift}', ${weekIndex}, 'backoff', 'reps', this.value)">
+                                </div>
+                            </div>
+                            <div class="field-row">
+                                <span style="color: rgba(255, 255, 255, 0.8);">Target RPE:</span>
+                                <span style="color: #c084fc; font-weight: bold;">${week.backoff.rpe}</span>
+                            </div>
+                            <div class="field-row">
+                                <span style="color: rgba(255, 255, 255, 0.8);">Suggested:</span>
+                                <span style="color: #22c55e; font-weight: bold;">
+                                    ${suggestedBackoffWeight > 0 
+                                        ? `${suggestedBackoffWeight} kg` 
+                                        : `${calculateWeight(currentLiftData.currentMax, week.backoff.rpe, week.backoff.reps)} kg`
+                                    }
+                                </span>
+                            </div>
+                            ${suggestedBackoffWeight > 0 ? `
+                                <div style="text-align: center; font-size: 0.75rem; color: rgba(34, 197, 94, 0.7);">
+                                    ↑ Based on top single estimate
+                                </div>
+                            ` : ''}
+                            <div class="field-row">
+                                <span style="color: rgba(255, 255, 255, 0.8);">Weight:</span>
+                                <input type="number" step="0.5" value="${week.backoff.weight || ''}" 
+                                       class="input field-input" placeholder="120"
+                                       onchange="updateWeight('${selectedLift}', ${weekIndex}, 'backoff', 'weight', this.value)">
+                            </div>
+                            <div class="field-row">
+                                <span style="color: rgba(255, 255, 255, 0.8);">Reps:</span>
+                                <input type="number" min="1" value="${week.backoff.actualReps || ''}" 
+                                       class="input field-input small" placeholder="5"
+                                       onchange="updateWeight('${selectedLift}', ${weekIndex}, 'backoff', 'actualReps', this.value)">
+                            </div>
+                            <div class="field-row">
+                                <span style="color: rgba(255, 255, 255, 0.8);">Actual RPE:</span>
+                                <select value="${week.backoff.actualRpe || ''}" class="select field-input"
+                                        onchange="updateWeight('${selectedLift}', ${weekIndex}, 'backoff', 'actualRpe', this.value)">
+                                    <option value="">Select</option>
+                                    <option value="6">RPE 6</option>
+                                    <option value="7">RPE 7</option>
+                                    <option value="8">RPE 8</option>
+                                    <option value="9">RPE 9</option>
+                                    <option value="10">RPE 10</option>
+                                </select>
+                            </div>
+                            ${week.backoff.weight > 0 && week.backoff.actualReps && week.backoff.actualRpe ? `
+                                <div class="field-row" style="font-size: 0.875rem;">
+                                    <span style="color: rgba(255, 255, 255, 0.8);">Est. 1RM:</span>
+                                    <span style="color: #f59e0b; font-weight: bold;">
+                                        ${calculateEstimated1RM(week.backoff.weight, week.backoff.actualReps, week.backoff.actualRpe)} kg
+                                    </span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem;">
+                        <h4 class="section-title">Session Notes</h4>
+                        <textarea value="${week.notes || ''}" placeholder="How did it feel? Technique notes, sleep, energy level, etc..." 
+                                  class="textarea" rows="3"
+                                  onchange="updateNotes('${selectedLift}', ${weekIndex}, this.value)">${week.notes || ''}</textarea>
+                    </div>
+                `;
+                
+                weeksGrid.appendChild(weekCard);
+            });
+        }
+
+        // Update deload analysis
+        function updateDeloadAnalysis() {
+            const analysis = analyzeDeloadNeed();
+            const deloadAlert = document.getElementById('deloadAlert');
+            
+            if (activeTab === 'training' && analysis.needsDeload) {
+                deloadAlert.classList.remove('hidden');
+                deloadAlert.className = `deload-alert ${analysis.severity}`;
+                
+                const title = analysis.severity === 'severe' ? '🛑 Deload Strongly Recommended' :
+                             analysis.severity === 'moderate' ? '⚠️ Consider a Deload' :
+                             '📊 Recovery May Be Needed';
+                
+                document.getElementById('deloadTitle').textContent = title;
+                
+                const reasonsList = analysis.reasons.map(r => `<li>${r}</li>`).join('');
+                const suggestionsList = analysis.suggestions.map(s => `<li>${s}</li>`).join('');
+                
+                document.getElementById('deloadContent').innerHTML = `
+                    <div>
                         <strong>Why:</strong>
-                        <ul className="list-disc list-inside ml-2 mt-1">
-                          {deloadAnalysis.reasons.map((reason, index) => (
-                            <li key={index}>{reason}</li>
-                          ))}
+                        <ul style="list-style-type: disc; list-style-position: inside; margin-left: 0.5rem; margin-top: 0.25rem;">
+                            ${reasonsList}
                         </ul>
-                      </div>
-                      <div>
+                    </div>
+                    <div style="margin-top: 0.5rem;">
                         <strong>Suggestions:</strong>
-                        <ul className="list-disc list-inside ml-2 mt-1">
-                          {deloadAnalysis.suggestions.map((suggestion, index) => (
-                            <li key={index}>{suggestion}</li>
-                          ))}
+                        <ul style="list-style-type: disc; list-style-position: inside; margin-left: 0.5rem; margin-top: 0.25rem;">
+                            ${suggestionsList}
                         </ul>
-                      </div>
-                      <button
-                        onClick={() => setActiveTab('deload')}
-                        className={`mt-3 px-4 py-2 rounded-lg font-medium transition-colors ${
-                          deloadAnalysis.severity === 'severe' ? 'bg-red-600 hover:bg-red-700' :
-                          deloadAnalysis.severity === 'moderate' ? 'bg-orange-600 hover:bg-orange-700' :
-                          'bg-yellow-600 hover:bg-yellow-700'
-                        } text-white text-sm`}
-                      >
-                        View Recovery Plan →
-                      </button>
                     </div>
-                  </div>
-                </div>
-              </div>
-            )}
+                `;
+            } else {
+                deloadAlert.classList.add('hidden');
+            }
+        }
 
-            {activeTab === 'training' && (
-                <div className="flex gap-1 sm:gap-2">
-                  {['squat', 'bench', 'deadlift'].map(lift => (
-                    <button
-                      key={lift}
-                      onClick={() => setSelectedLift(lift)}
-                      className={`px-3 sm:px-6 py-2 rounded-lg font-medium transition-colors text-xs sm:text-sm ${
-                        selectedLift === lift
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-white/20 text-white hover:bg-white/30'
-                      }`}
-                    >
-                      {lift.charAt(0).toUpperCase() + lift.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+        // Update complete block button visibility
+        function updateCompleteBlockButton() {
+            const completeBtn = document.getElementById('completeBlockBtn');
+            const shouldShow = Object.values(trainingData).some(lift => 
+                lift.weeks[3].topSingle.weight > 0 && lift.weeks[3].topSingle.actualRpe > 0
+            );
+            
+            if (shouldShow) {
+                completeBtn.classList.remove('hidden');
+            } else {
+                completeBtn.classList.add('hidden');
+            }
+        }
 
-            {activeTab === 'training' && (
-              <>
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 mb-6 border border-white/20">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
-                    <label className="text-white font-medium text-sm sm:text-base">
-                      Starting {selectedLift.charAt(0).toUpperCase() + selectedLift.slice(1)} Max:
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        value={currentLiftData.currentMax}
-                        onChange={(e) => updateCurrentMax(selectedLift, e.target.value)}
-                        className="bg-white/20 text-white placeholder-white/60 px-3 sm:px-4 py-2 rounded-lg w-20 sm:w-24 border border-white/30 focus:border-purple-400 focus:outline-none text-sm sm:text-base"
-                        placeholder="140"
-                      />
-                      <span className="text-white text-sm sm:text-base">kg</span>
-                      <button
-                        onClick={() => autoCalculateWeights(selectedLift)}
-                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm"
-                      >
-                        <Calculator className="w-3 h-3 sm:w-4 sm:h-4" />
-                        <span className="hidden sm:inline">Auto Calculate</span>
-                        <span className="sm:hidden">Auto</span>
-                      </button>
-                    </div>
-                  </div>
-                  <p className="text-white/60 text-xs sm:text-sm">
-                    Block {currentBlock}: Training max {currentLiftData.currentMax}kg. Next block will start at {calculateWeight(currentLiftData.currentMax, 7, 1)}kg (current Week 2 weight).
-                  </p>
-                </div>
+        // Complete current block
+        function completeBlock() {
+            if (!confirm('Complete current block and progress to the next one?')) return;
 
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/20 overflow-x-auto">
-                  <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
-                    {selectedLift.charAt(0).toUpperCase() + selectedLift.slice(1)} Program - Block {currentBlock}
-                  </h2>
-                  <p className="text-white/60 text-xs sm:text-sm mb-4 sm:mb-6">
-                    Complete all 4 weeks, then progress to the next block with updated training maxes
-                  </p>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                    {currentLiftData.weeks.map((week, weekIndex) => {
-                      const weeklyEstimate = calculateWeeklyEstimated1RM(week);
-                      const topSingleEstimate = week.topSingle.weight && week.topSingle.actualReps && week.topSingle.actualRpe 
-                        ? calculateEstimated1RM(week.topSingle.weight, week.topSingle.actualReps, week.topSingle.actualRpe)
-                        : 0;
-                      const suggestedBackoffWeight = calculateBackoffWeight(
-                        week.topSingle.weight, 
-                        week.topSingle.actualReps, 
-                        week.topSingle.actualRpe, 
-                        week.backoff.reps, 
-                        week.backoff.rpe
-                      );
-                      
-                      return (
-                        <div key={weekIndex} className="bg-white/10 rounded-xl p-3 sm:p-4 border border-white/20">
-                          <h3 className="text-lg sm:text-xl font-bold text-purple-300 mb-2 text-center">
-                            Week {week.week}
-                          </h3>
-                          
-                          {topSingleEstimate > 0 && (
-                            <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg p-2 sm:p-3 mb-3 sm:mb-4 text-center border border-yellow-400/30">
-                              <div className="text-yellow-300 text-xs sm:text-sm font-medium">Estimated 1RM</div>
-                              <div className="text-yellow-400 text-lg sm:text-xl font-bold">{topSingleEstimate} kg</div>
-                              <div className="text-yellow-300/80 text-xs mt-1">Based on top single</div>
-                            </div>
-                          )}
-                          
-                          {weeklyEstimate > 0 && (
-                            <div className="bg-green-500/20 rounded-lg p-2 mb-3 sm:mb-4 text-center border border-green-400/30">
-                              <div className="text-green-300 text-xs sm:text-sm font-medium">Week Average</div>
-                              <div className="text-green-400 text-sm sm:text-lg font-bold">{weeklyEstimate} kg</div>
-                            </div>
-                          )}
+            const blockData = {
+                blockNumber: currentBlock,
+                completedDate: new Date().toISOString(),
+                lifts: {}
+            };
 
-                          <div className="mb-4 sm:mb-6">
-                            <h4 className="text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3">Top Single</h4>
-                            <div className="space-y-1 sm:space-y-2 text-sm sm:text-base">
-                              <div className="flex justify-between items-center">
-                                <span className="text-white/80">Target RPE:</span>
-                                <span className="text-purple-300 font-bold">{week.topSingle.rpe}</span>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-white/80">Suggested:</span>
-                                <span className="text-green-400 font-bold">
-                                  {calculateWeight(currentLiftData.currentMax, week.topSingle.rpe, 1)} kg
-                                </span>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-white/80">Weight:</span>
-                                <input
-                                  type="number"
-                                  step="2.5"
-                                  value={week.topSingle.weight || ''}
-                                  onChange={(e) => updateWeight(selectedLift, weekIndex, 'topSingle', 'weight', e.target.value)}
-                                  className="bg-white/20 text-white w-16 sm:w-20 px-1 sm:px-2 py-1 rounded border border-white/30 focus:border-purple-400 focus:outline-none text-center text-sm sm:text-base"
-                                  placeholder="140"
-                                />
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-white/80">Reps:</span>
-                                <input
-                                  type="number"
-                                  min="1"
-                                  value={week.topSingle.actualReps || ''}
-                                  onChange={(e) => updateWeight(selectedLift, weekIndex, 'topSingle', 'actualReps', e.target.value)}
-                                  className="bg-white/20 text-white w-12 sm:w-16 px-1 sm:px-2 py-1 rounded border border-white/30 focus:border-purple-400 focus:outline-none text-center text-sm sm:text-base"
-                                  placeholder="1"
-                                />
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-white/80">Actual RPE:</span>
-                                <select
-                                  value={week.topSingle.actualRpe || ''}
-                                  onChange={(e) => updateWeight(selectedLift, weekIndex, 'topSingle', 'actualRpe', e.target.value)}
-                                  className="bg-white/20 text-white w-16 sm:w-20 px-1 sm:px-2 py-1 rounded border border-white/30 focus:border-purple-400 focus:outline-none text-center text-xs sm:text-sm"
-                                >
-                                  <option value="" className="bg-slate-800">Select</option>
-                                  <option value="6" className="bg-slate-800">RPE 6</option>
-                                  <option value="7" className="bg-slate-800">RPE 7</option>
-                                  <option value="8" className="bg-slate-800">RPE 8</option>
-                                  <option value="9" className="bg-slate-800">RPE 9</option>
-                                  <option value="10" className="bg-slate-800">RPE 10</option>
-                                </select>
-                              </div>
-                              {week.topSingle.weight > 0 && week.topSingle.actualReps && week.topSingle.actualRpe && (
-                                <div className="flex justify-between items-center bg-yellow-500/10 p-2 rounded border border-yellow-400/20 text-xs sm:text-sm">
-                                  <span className="text-yellow-300 font-medium">→ Est. 1RM:</span>
-                                  <span className="text-yellow-400 font-bold">
-                                    {calculateEstimated1RM(week.topSingle.weight, week.topSingle.actualReps, week.topSingle.actualRpe)} kg
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          <div>
-                            <h4 className="text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3">Back-off Sets</h4>
-                            <div className="space-y-1 sm:space-y-2 text-sm sm:text-base">
-                              <div className="flex justify-between items-center">
-                                <span className="text-white/80">Sets × Reps:</span>
-                                <div className="flex gap-1">
-                                  <input
-                                    type="number"
-                                    min="1"
-                                    max="5"
-                                    value={week.backoff.sets || ''}
-                                    onChange={(e) => updateWeight(selectedLift, weekIndex, 'backoff', 'sets', e.target.value)}
-                                    className="bg-white/20 text-white w-10 sm:w-12 px-1 py-1 rounded border border-white/30 focus:border-purple-400 focus:outline-none text-center text-xs sm:text-sm"
-                                    placeholder="3"
-                                  />
-                                  <span className="text-white/80 text-xs sm:text-sm">×</span>
-                                  <input
-                                    type="number"
-                                    min="1"
-                                    max="10"
-                                    value={week.backoff.reps || ''}
-                                    onChange={(e) => updateWeight(selectedLift, weekIndex, 'backoff', 'reps', e.target.value)}
-                                    className="bg-white/20 text-white w-10 sm:w-12 px-1 py-1 rounded border border-white/30 focus:border-purple-400 focus:outline-none text-center text-xs sm:text-sm"
-                                    placeholder="5"
-                                  />
-                                </div>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-white/80">Target RPE:</span>
-                                <span className="text-purple-300 font-bold">{week.backoff.rpe}</span>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-white/80">Suggested:</span>
-                                <span className="text-green-400 font-bold">
-                                  {suggestedBackoffWeight > 0 
-                                    ? `${suggestedBackoffWeight} kg` 
-                                    : `${calculateWeight(currentLiftData.currentMax, week.backoff.rpe, week.backoff.reps)} kg`
-                                }
-                                </span>
-                              </div>
-                              {suggestedBackoffWeight > 0 && (
-                                <div className="text-xs text-green-300/70 text-center mt-1">
-                                  ↑ Based on top single estimate
-                                </div>
-                              )}
-                              <div className="flex justify-between items-center">
-                                <span className="text-white/80">Weight:</span>
-                                <input
-                                  type="number"
-                                  step="0.5"
-                                  value={week.backoff.weight || ''}
-                                  onChange={(e) => updateWeight(selectedLift, weekIndex, 'backoff', 'weight', e.target.value)}
-                                  className="bg-white/20 text-white w-16 sm:w-20 px-1 sm:px-2 py-1 rounded border border-white/30 focus:border-purple-400 focus:outline-none text-center text-sm sm:text-base"
-                                  placeholder="120"
-                                />
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-white/80">Reps:</span>
-                                <input
-                                  type="number"
-                                  min="1"
-                                  value={week.backoff.actualReps || ''}
-                                  onChange={(e) => updateWeight(selectedLift, weekIndex, 'backoff', 'actualReps', e.target.value)}
-                                  className="bg-white/20 text-white w-12 sm:w-16 px-1 sm:px-2 py-1 rounded border border-white/30 focus:border-purple-400 focus:outline-none text-center text-sm sm:text-base"
-                                  placeholder="5"
-                                />
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-white/80">Actual RPE:</span>
-                                <select
-                                  value={week.backoff.actualRpe || ''}
-                                  onChange={(e) => updateWeight(selectedLift, weekIndex, 'backoff', 'actualRpe', e.target.value)}
-                                  className="bg-white/20 text-white w-16 sm:w-20 px-1 sm:px-2 py-1 rounded border border-white/30 focus:border-purple-400 focus:outline-none text-center text-xs sm:text-sm"
-                                >
-                                  <option value="" className="bg-slate-800">Select</option>
-                                  <option value="6" className="bg-slate-800">RPE 6</option>
-                                  <option value="7" className="bg-slate-800">RPE 7</option>
-                                  <option value="8" className="bg-slate-800">RPE 8</option>
-                                  <option value="9" className="bg-slate-800">RPE 9</option>
-                                  <option value="10" className="bg-slate-800">RPE 10</option>
-                                </select>
-                              </div>
-                              {week.backoff.weight > 0 && week.backoff.actualReps && week.backoff.actualRpe && (
-                                <div className="flex justify-between items-center text-xs sm:text-sm">
-                                  <span className="text-white/80">Est. 1RM:</span>
-                                  <span className="text-yellow-400 font-bold">
-                                    {calculateEstimated1RM(week.backoff.weight, week.backoff.actualReps, week.backoff.actualRpe)} kg
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="mt-4 sm:mt-6">
-                            <h4 className="text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3">Session Notes</h4>
-                            <textarea
-                              value={week.notes || ''}
-                              onChange={(e) => updateNotes(selectedLift, weekIndex, e.target.value)}
-                              placeholder="How did it feel? Technique notes, sleep, energy level, etc..."
-                              className="w-full bg-white/20 text-white placeholder-white/60 px-2 sm:px-3 py-2 rounded-lg border border-white/30 focus:border-purple-400 focus:outline-none resize-none text-xs sm:text-sm"
-                              rows="3"
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </>
-            )}
-
-            {activeTab === 'history' && (
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-                <h2 className="text-2xl font-bold text-white mb-6">Block Progression History</h2>
-                {completedBlocks.length === 0 ? (
-                  <div className="text-center py-12">
-                    <TrendingUp className="w-16 h-16 text-white/30 mx-auto mb-4" />
-                    <p className="text-white/60 text-lg">No completed blocks yet</p>
-                    <p className="text-white/40 text-sm mt-2">Complete your first block to see progression history here</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {completedBlocks.map((block, index) => (
-                      <div key={index} className="bg-white/10 rounded-lg p-4 border border-white/20">
-                        <h4 className="text-lg font-semibold text-purple-300 mb-2">Block {block.blockNumber}</h4>
-                        <div className="space-y-2 text-sm">
-                          {Object.entries(block.lifts).map(([lift, data]) => (
-                            <div key={lift} className="space-y-1">
-                              <div className="flex justify-between">
-                                <span className="text-white/80 capitalize">{lift}:</span>
-                                <span className={`font-medium ${data.progression >= 0 ? 'text-green-400' : 'text-orange-400'}`}>
-                                  {data.oldMax}kg → {data.newMax}kg ({data.progression >= 0 ? '+' : ''}{data.progression}kg)
-                                </span>
-                              </div>
-                              {data.avgRPEVariance !== undefined && (
-                                <div className="text-xs pl-2">
-                                  <span className="text-white/60">RPE Performance: </span>
-                                  <span className={`font-medium ${
-                                    Math.abs(data.avgRPEVariance) < 0.3 ? 'text-green-400' : 
-                                    data.avgRPEVariance > 0 ? 'text-orange-400' : 'text-blue-400'
-                                  }`}>
-                                    {data.avgRPEVariance > 0 ? '+' : ''}{data.avgRPEVariance.toFixed(1)} RPE
-                                  </span>
-                                  <span className="text-white/50 ml-1">
-                                    ({Math.abs(data.avgRPEVariance) < 0.3 ? 'On target' : 
-                                      data.avgRPEVariance > 0 ? 'Running hard' : 'Running easy'})
-                                  </span>
-                                </div>
-                              )}
-                              {data.oldWeights && (
-                                <div className="text-xs text-white/60 pl-2">
-                                  Block {block.blockNumber}: {data.oldWeights.week1}→{data.oldWeights.week2}→{data.oldWeights.week3}→{data.oldWeights.week4}kg
-                                </div>
-                              )}
-                              <div className="text-xs text-green-300/60 pl-2">
-                                Block {block.blockNumber + 1}: {data.newWeights.week1}→{data.newWeights.week2}→{data.newWeights.week3}→{data.newWeights.week4}kg
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="text-xs text-white/60 mt-2">
-                          Completed: {new Date(block.completedDate).toLocaleDateString()}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'chart' && (
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/20">
-                <div className="flex items-center gap-3 mb-4 sm:mb-6">
-                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
-                  <h3 className="text-lg sm:text-xl font-bold text-white">Strength Progression</h3>
-                </div>
+            ['squat', 'bench', 'deadlift'].forEach(lift => {
+                const currentMax = trainingData[lift].currentMax;
                 
-                <div className="h-64 sm:h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={prepareChartData()}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
-                      <XAxis 
-                        dataKey="week" 
-                        stroke="#ffffff80"
-                        fontSize={10}
-                        interval={0}
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                      />
-                      <YAxis 
-                        stroke="#ffffff80"
-                        fontSize={10}
-                        label={{ value: 'Weight (kg)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#ffffff80' } }}
-                      />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: '#1e293b', 
-                          border: '1px solid #475569',
-                          borderRadius: '8px',
-                          color: '#ffffff',
-                          fontSize: '12px'
-                        }}
-                        formatter={(value, name) => [
-                          value ? `${value} kg` : 'No data',
-                          name.charAt(0).toUpperCase() + name.slice(1)
-                        ]}
-                      />
-                      <Legend 
-                        wrapperStyle={{ color: '#ffffff', fontSize: '12px' }}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="squat" 
-                        stroke="#8b5cf6" 
-                        strokeWidth={2}
-                        dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 3 }}
-                        connectNulls={false}
-                        name="Squat"
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="bench" 
-                        stroke="#06d6a0" 
-                        strokeWidth={2}
-                        dot={{ fill: '#06d6a0', strokeWidth: 2, r: 3 }}
-                        connectNulls={false}
-                        name="Bench"
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="deadlift" 
-                        stroke="#f72585" 
-                        strokeWidth={2}
-                        dot={{ fill: '#f72585', strokeWidth: 2, r: 3 }}
-                        connectNulls={false}
-                        name="Deadlift"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                const weeks = trainingData[lift].weeks;
+                const performanceData = [];
                 
-                <div className="mt-4 text-xs sm:text-sm text-white/60">
-                  <p>📈 Chart shows estimated 1RM progression across all completed blocks and current training</p>
-                  <p>💡 B1W1 = Block 1 Week 1, etc. Your next block Week 1 will start at previous block Week 2 weights</p>
-                </div>
-              </div>
-            )}
-
-            {/* RPE Reference - Only show on training tab */}
-            {activeTab === 'training' && (
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 mt-6 border border-white/20">
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-4">RPE Chart (% of 1RM)</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs sm:text-sm">
-                    <thead>
-                      <tr className="border-b border-white/20">
-                        <th className="text-white/80 p-1 sm:p-2 text-left">Reps</th>
-                        {[6, 7, 8, 9, 10].map(rpe => (
-                          <th key={rpe} className="text-purple-300 p-1 sm:p-2 text-center">RPE {rpe}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[1, 2, 3, 4, 5].map(reps => (
-                        <tr key={reps} className="border-b border-white/10">
-                          <td className="text-white font-medium p-1 sm:p-2">{reps}</td>
-                          {[6, 7, 8, 9, 10].map(rpe => (
-                            <td key={rpe} className="text-white/80 p-1 sm:p-2 text-center">
-                              {Math.round(tuchschererChart[reps][rpe] * 100)}%
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* Block Periodization Guide - Only show on training tab */}
-            {activeTab === 'training' && (
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 mt-6 border border-white/20">
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Block Periodization Guide</h3>
-                <div className="text-white/80 space-y-2 text-xs sm:text-sm">
-                  <p><strong>🔄 How Block Periodization Works:</strong></p>
-                  <p>1. Complete a 4-week block (RPE 6→7→8→9 progression)</p>
-                  <p>2. After Week 4, click <strong>"Complete Block"</strong> to auto-progress</p>
-                  <p>3. App adjusts your training max based on RPE performance</p>
-                  <p>4. <strong>Next block Week 1 ≈ Previous block Week 2 weights</strong> (if RPEs on target)</p>
-                  <p>5. Repeat the cycle for continuous progression</p>
-                  <p><strong>📊 Smart Autoregulation:</strong></p>
-                  <p>• RPEs on target → Normal progression</p>
-                  <p>• RPEs running high → Reduced progression or deload</p>
-                  <p>• RPEs running low → Increased progression</p>
-                  <p>💡 <strong>This is exactly how elite powerlifters periodize</strong> - responsive progression based on actual performance</p>
-                </div>
-              </div>
-            )}
-
-            {/* Deload Tab Content */}
-            {activeTab === 'deload' && (
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/20">
-                <div className="flex items-center gap-3 mb-4 sm:mb-6">
-                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" />
-                  <h3 className="text-lg sm:text-xl font-bold text-white">Recovery & Deload Planning</h3>
-                </div>
+                weeks.forEach((week, index) => {
+                    if (week.topSingle.weight && week.topSingle.actualReps && week.topSingle.actualRpe) {
+                        performanceData.push({
+                            week: index + 1,
+                            type: 'topSingle',
+                            targetRPE: week.topSingle.rpe,
+                            actualRPE: week.topSingle.actualRpe,
+                            rpeVariance: week.topSingle.actualRpe - week.topSingle.rpe
+                        });
+                    }
+                    
+                    if (week.backoff.weight && week.backoff.actualReps && week.backoff.actualRpe) {
+                        performanceData.push({
+                            week: index + 1,
+                            type: 'backoff',
+                            targetRPE: week.backoff.rpe,
+                            actualRPE: week.backoff.actualRpe,
+                            rpeVariance: week.backoff.actualRpe - week.backoff.rpe
+                        });
+                    }
+                });
                 
-                {deloadAnalysis.needsDeload ? (
-                  <div className="space-y-6">
-                    <div className={`rounded-xl p-4 sm:p-6 border ${
-                      deloadAnalysis.severity === 'severe' ? 'bg-red-500/20 border-red-400/50' :
-                      deloadAnalysis.severity === 'moderate' ? 'bg-orange-500/20 border-orange-400/50' :
-                      'bg-yellow-500/20 border-yellow-400/50'
-                    }`}>
-                      <h4 className={`text-lg font-bold mb-3 ${
-                        deloadAnalysis.severity === 'severe' ? 'text-red-400' :
-                        deloadAnalysis.severity === 'moderate' ? 'text-orange-400' :
-                        'text-yellow-400'
-                      }`}>
-                        {deloadAnalysis.severity === 'severe' ? '🛑 Immediate Deload Required' :
-                         deloadAnalysis.severity === 'moderate' ? '⚠️ Deload Recommended' :
-                         '📊 Light Recovery Suggested'}
-                      </h4>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <h5 className="text-white font-semibold mb-2">Affected Lifts:</h5>
-                          <ul className="list-disc list-inside text-white/80 text-sm space-y-1">
-                            {deloadAnalysis.affectedLifts.map((lift, index) => (
-                              <li key={index} className="capitalize">{lift}</li>
-                            ))}
-                          </ul>
-                        </div>
+                let newTrainingMax;
+                let avgRPEVariance = 0;
+                
+                if (performanceData.length > 0) {
+                    avgRPEVariance = performanceData.reduce((sum, data) => sum + data.rpeVariance, 0) / performanceData.length;
+                    
+                    const targetWeek1Weight = calculateWeight(currentMax, 7, 1);
+                    const baseNewMax = Math.round((targetWeek1Weight / tuchschererChart[1][6]) / 2.5) * 2.5;
+                    
+                    let liftProgressionFactor = 1.0;
+                    switch(lift) {
+                        case 'squat':
+                            liftProgressionFactor = 1.035;
+                            break;
+                        case 'bench':
+                            liftProgressionFactor = 1.015;
+                            break;
+                        case 'deadlift':
+                            liftProgressionFactor = 1.04;
+                            break;
+                    }
+                    
+                    let adjustmentFactor = liftProgressionFactor;
+                    if (avgRPEVariance > 0.3) {
+                        if (avgRPEVariance > 1.0) {
+                            adjustmentFactor = 0.95;
+                        } else if (avgRPEVariance > 0.7) {
+                            adjustmentFactor = 0.98;
+                        } else {
+                            adjustmentFactor = 1.0;
+                        }
+                    } else if (avgRPEVariance < -0.3) {
+                        const extraProgression = Math.abs(avgRPEVariance) * 0.01;
+                        adjustmentFactor = liftProgressionFactor + extraProgression;
+                    }
+                    
+                    newTrainingMax = Math.round((baseNewMax * adjustmentFactor) / 2.5) * 2.5;
+                    
+                    let maxIncrease, maxDecrease;
+                    switch(lift) {
+                        case 'squat':
+                            maxIncrease = currentMax + 10;
+                            maxDecrease = Math.max(currentMax - 10, currentMax * 0.9);
+                            break;
+                        case 'bench':
+                            maxIncrease = currentMax + 2.5;
+                            maxDecrease = Math.max(currentMax - 5, currentMax * 0.9);
+                            break;
+                        case 'deadlift':
+                            maxIncrease = currentMax + 10;
+                            maxDecrease = Math.max(currentMax - 12.5, currentMax * 0.9);
+                            break;
+                        default:
+                            maxIncrease = currentMax + 2.5;
+                            maxDecrease = Math.max(currentMax - 5, currentMax * 0.9);
+                    }
+                    
+                    newTrainingMax = Math.max(maxDecrease, Math.min(maxIncrease, newTrainingMax));
+                } else {
+                    let conservativeIncrease;
+                    switch(lift) {
+                        case 'squat':
+                            conservativeIncrease = 5;
+                            break;
+                        case 'bench':
+                            conservativeIncrease = 1.25;
+                            break;
+                        case 'deadlift':
+                            conservativeIncrease = 5;
+                            break;
+                        default:
+                            conservativeIncrease = 1.25;
+                    }
+                    
+                    const targetWeek1Weight = calculateWeight(currentMax, 7, 1);
+                    newTrainingMax = Math.round((targetWeek1Weight / tuchschererChart[1][6]) / 2.5) * 2.5;
+                    newTrainingMax = Math.round((newTrainingMax + conservativeIncrease) / 2.5) * 2.5;
+                }
+                
+                const oldWeights = {
+                    week1: calculateWeight(currentMax, 6, 1),
+                    week2: calculateWeight(currentMax, 7, 1),
+                    week3: calculateWeight(currentMax, 8, 1),
+                    week4: calculateWeight(currentMax, 9, 1)
+                };
+                
+                const newWeights = {
+                    week1: calculateWeight(newTrainingMax, 6, 1),
+                    week2: calculateWeight(newTrainingMax, 7, 1),
+                    week3: calculateWeight(newTrainingMax, 8, 1),
+                    week4: calculateWeight(newTrainingMax, 9, 1)
+                };
+                
+                blockData.lifts[lift] = {
+                    oldMax: currentMax,
+                    newMax: newTrainingMax,
+                    progression: newTrainingMax - currentMax,
+                    avgRPEVariance: avgRPEVariance,
+                    performanceData: performanceData,
+                    oldWeights: oldWeights,
+                    newWeights: newWeights
+                };
+            });
+
+            completedBlocks.push(blockData);
+            
+            const newTrainingData = createInitialData();
+            Object.keys(newTrainingData).forEach(lift => {
+                newTrainingData[lift].currentMax = blockData.lifts[lift].newMax;
+                newTrainingData[lift].weeks = newTrainingData[lift].weeks.map(week => ({
+                    ...week, 
+                    topSingle: {
+                        ...week.topSingle,
+                        weight: calculateWeight(blockData.lifts[lift].newMax, week.topSingle.rpe, 1)
+                    },
+                    backoff: {
+                        ...week.backoff,
+                        weight: calculateWeight(blockData.lifts[lift].newMax, week.backoff.rpe, week.backoff.reps)
+                    },
+                    notes: ''
+                }));
+            });
+            
+            trainingData = newTrainingData;
+            currentBlock = currentBlock + 1;
+            
+            updateUI();
+            renderWeeks();
+            updateCompleteBlockButton();
+            saveData();
+        }
+
+        // Reset program
+        function resetProgram() {
+            if (!confirm('Reset all data? This cannot be undone!')) return;
+
+            trainingData = createInitialData();
+            currentBlock = 1;
+            completedBlocks = [];
+            selectedLift = 'squat';
+            activeTab = 'training';
+            
+            // Clear localStorage
+            localStorage.removeItem('powerlifting-training-data');
+            localStorage.removeItem('powerlifting-current-block');
+            localStorage.removeItem('powerlifting-completed-blocks');
+            localStorage.removeItem('powerlifting-selected-lift');
+            localStorage.removeItem('powerlifting-active-tab');
+            
+            updateUI();
+            renderWeeks();
+            updateCompleteBlockButton();
+            saveData();
+        }
+
+        // Export data
+        function exportData() {
+            const exportObj = {
+                trainingData,
+                currentBlock,
+                completedBlocks,
+                selectedLift,
+                activeTab,
+                exportDate: new Date().toISOString(),
+                programName: "Block Periodization Powerlifting Template",
+                version: "1.0"
+            };
+            
+            const dataStr = JSON.stringify(exportObj, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `powerlifting-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // Import data
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    if (importedData.trainingData && importedData.currentBlock !== undefined) {
+                        trainingData = importedData.trainingData;
+                        currentBlock = importedData.currentBlock;
+                        completedBlocks = importedData.completedBlocks || [];
+                        if (importedData.selectedLift) selectedLift = importedData.selectedLift;
+                        if (importedData.activeTab) activeTab = importedData.activeTab;
                         
-                        <div>
-                          <h5 className="text-white font-semibold mb-2">Key Issues:</h5>
-                          <ul className="list-disc list-inside text-white/80 text-sm space-y-1">
-                            {deloadAnalysis.reasons.map((reason, index) => (
-                              <li key={index}>{reason}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
+                        updateUI();
+                        renderWeeks();
+                        updateCompleteBlockButton();
+                        saveData();
+                        
+                        alert('Data imported successfully!');
+                    } else {
+                        alert('Invalid backup file format.');
+                    }
+                } catch (error) {
+                    alert('Error reading backup file.');
+                }
+            };
+            reader.readAsText(file);
+            
+            // Reset the input
+            event.target.value = '';
+        }
 
-                    <div className="bg-green-500/20 rounded-xl p-4 sm:p-6 border border-green-400/50">
-                      <h4 className="text-lg font-bold text-green-400 mb-3">📋 Recommended Recovery Protocol</h4>
-                      <div className="space-y-3">
-                        {deloadAnalysis.suggestions.map((suggestion, index) => (
-                          <div key={index} className="flex items-start gap-3">
-                            <span className="text-green-400 font-bold text-sm">{index + 1}.</span>
-                            <span className="text-white/90 text-sm">{suggestion}</span>
-                          </div>
-                        ))}
-                      </div>
+        // Render history tab
+        function renderHistory() {
+            const historyContent = document.getElementById('historyContent');
+            
+            if (completedBlocks.length === 0) {
+                historyContent.innerHTML = `
+                    <div class="empty-state">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
+                        </svg>
+                        <p style="color: rgba(255, 255, 255, 0.6); font-size: 1.125rem;">No completed blocks yet</p>
+                        <p style="color: rgba(255, 255, 255, 0.4); font-size: 0.875rem; margin-top: 0.5rem;">
+                            Complete your first block to see progression history here
+                        </p>
                     </div>
-
-                    <div className="bg-blue-500/20 rounded-xl p-4 sm:p-6 border border-blue-400/50">
-                      <h4 className="text-lg font-bold text-blue-400 mb-3">🎯 Suggested Deload Weights</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {['squat', 'bench', 'deadlift'].map(lift => {
-                          const currentMax = trainingData[lift].currentMax;
-                          const deloadPercentage = deloadAnalysis.severity === 'severe' ? 0.6 : 
-                                                 deloadAnalysis.severity === 'moderate' ? 0.7 : 0.85;
-                          const deloadWeight = Math.round((currentMax * deloadPercentage) / 2.5) * 2.5;
-                          
-                          return (
-                            <div key={lift} className="text-center">
-                              <h5 className="text-white font-semibold mb-2 capitalize">{lift}</h5>
-                              <div className="text-2xl font-bold text-blue-400">{deloadWeight}kg</div>
-                              <div className="text-xs text-white/60">
-                                ({Math.round(deloadPercentage * 100)}% of {currentMax}kg)
-                              </div>
+                `;
+                return;
+            }
+            
+            historyContent.innerHTML = `
+                <div class="history-grid">
+                    ${completedBlocks.map((block, index) => `
+                        <div class="block-card">
+                            <h4 style="font-size: 1.125rem; font-weight: 600; color: #c084fc; margin-bottom: 0.5rem;">
+                                Block ${block.blockNumber}
+                            </h4>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;">
+                                ${Object.entries(block.lifts).map(([lift, data]) => `
+                                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <span style="color: rgba(255, 255, 255, 0.8); text-transform: capitalize;">${lift}:</span>
+                                            <span style="font-weight: 500; color: ${data.progression >= 0 ? '#22c55e' : '#f97316'};">
+                                                ${data.oldMax}kg → ${data.newMax}kg (${data.progression >= 0 ? '+' : ''}${data.progression}kg)
+                                            </span>
+                                        </div>
+                                        ${data.avgRPEVariance !== undefined ? `
+                                            <div style="font-size: 0.75rem; padding-left: 0.5rem;">
+                                                <span style="color: rgba(255, 255, 255, 0.6);">RPE Performance: </span>
+                                                <span style="font-weight: 500; color: ${
+                                                    Math.abs(data.avgRPEVariance) < 0.3 ? '#22c55e' : 
+                                                    data.avgRPEVariance > 0 ? '#f97316' : '#3b82f6'
+                                                };">
+                                                    ${data.avgRPEVariance > 0 ? '+' : ''}${data.avgRPEVariance.toFixed(1)} RPE
+                                                </span>
+                                                <span style="color: rgba(255, 255, 255, 0.5); margin-left: 0.25rem;">
+                                                    (${Math.abs(data.avgRPEVariance) < 0.3 ? 'On target' : 
+                                                      data.avgRPEVariance > 0 ? 'Running hard' : 'Running easy'})
+                                                </span>
+                                            </div>
+                                        ` : ''}
+                                        ${data.oldWeights ? `
+                                            <div style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.6); padding-left: 0.5rem;">
+                                                Block ${block.blockNumber}: ${data.oldWeights.week1}→${data.oldWeights.week2}→${data.oldWeights.week3}→${data.oldWeights.week4}kg
+                                            </div>
+                                        ` : ''}
+                                        <div style="font-size: 0.75rem; color: rgba(34, 197, 94, 0.6); padding-left: 0.5rem;">
+                                            Block ${block.blockNumber + 1}: ${data.newWeights.week1}→${data.newWeights.week2}→${data.newWeights.week3}→${data.newWeights.week4}kg
+                                        </div>
+                                    </div>
+                                `).join('')}
                             </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <TrendingUp className="w-8 h-8 text-green-400" />
-                    </div>
-                    <h4 className="text-xl font-bold text-green-400 mb-2">✅ Recovery Status: Good</h4>
-                    <p className="text-white/80 mb-4">Your RPE performance indicates you're recovering well from training</p>
-                    <div className="bg-green-500/10 rounded-lg p-4 border border-green-400/30 max-w-md mx-auto">
-                      <p className="text-green-300 text-sm">
-                        💪 Keep following your current program. Consider a deload every 4-6 blocks or when RPEs start consistently running high.
-                      </p>
-                    </div>
-                  </div>
-                )}
-                
-                <div className="mt-6 bg-white/5 rounded-xl p-4 border border-white/10">
-                  <h4 className="text-white font-semibold mb-3">💡 General Recovery Tips</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-white/80">
-                    <div>
-                      <h5 className="text-white font-medium mb-2">Sleep & Recovery</h5>
-                      <ul className="list-disc list-inside space-y-1">
-                        <li>Aim for 7-9 hours of quality sleep</li>
-                        <li>Maintain consistent sleep schedule</li>
-                        <li>Limit screens before bed</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h5 className="text-white font-medium mb-2">Nutrition & Hydration</h5>
-                      <ul className="list-disc list-inside space-y-1">
-                        <li>Adequate protein intake (0.8-1g/lb bodyweight)</li>
-                        <li>Stay well hydrated throughout the day</li>
-                        <li>Don't drastically under-eat during heavy training</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h5 className="text-white font-medium mb-2">Stress Management</h5>
-                      <ul className="list-disc list-inside space-y-1">
-                        <li>Manage work and life stress</li>
-                        <li>Take rest days seriously</li>
-                        <li>Consider meditation or relaxation techniques</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h5 className="text-white font-medium mb-2">Active Recovery</h5>
-                      <ul className="list-disc list-inside space-y-1">
-                        <li>Light cardio on rest days</li>
-                        <li>Mobility and stretching work</li>
-                        <li>Massage or foam rolling</li>
-                      </ul>
-                    </div>
-                  </div>
+                            <div style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.6); margin-top: 0.5rem;">
+                                Completed: ${new Date(block.completedDate).toLocaleDateString()}
+                            </div>
+                        </div>
+                    `).join('')}
                 </div>
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    };
+            `;
+        }
 
-    // Render the component
-    ReactDOM.render(React.createElement(PowerliftingApp), document.getElementById('root'));
+        // Render deload tab
+        function renderDeloadTab() {
+            const analysis = analyzeDeloadNeed();
+            const deloadAnalysis = document.getElementById('deloadAnalysis');
+            
+            if (!analysis.needsDeload) {
+                deloadAnalysis.innerHTML = `
+                    <div style="text-align: center; padding: 2rem 0;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+                        <h3 style="font-size: 1.5rem; font-weight: bold; color: #22c55e; margin-bottom: 1rem;">
+                            Recovery Looks Good!
+                        </h3>
+                        <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 1rem;">
+                            Your RPEs are tracking well with targets. Keep up the good work!
+                        </p>
+                        <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem;">
+                            <p style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.9);">
+                                <strong>Keep monitoring:</strong> If RPEs start consistently running 1+ points above target, 
+                                consider implementing one of the recovery strategies below.
+                            </p>
+                        </div>
+                        <div style="margin-top: 2rem; text-align: left;">
+                            <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">General Recovery Tips:</h4>
+                            <ul style="list-style-type: disc; list-style-position: inside; color: rgba(255, 255, 255, 0.8); font-size: 0.875rem; line-height: 1.6; space-y: 0.5rem;">
+                                <li>Prioritize 7-9 hours of quality sleep</li>
+                                <li>Stay consistently hydrated throughout training</li>
+                                <li>Manage life stress where possible</li>
+                                <li>Consider extra rest days if feeling run down</li>
+                                <li>Focus on post-workout nutrition and recovery</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const severityColor = analysis.severity === 'severe' ? '#ef4444' :
+                                 analysis.severity === 'moderate' ? '#f97316' : '#eab308';
+            
+            const severityIcon = analysis.severity === 'severe' ? '🛑' :
+                                analysis.severity === 'moderate' ? '⚠️' : '📊';
+                                
+            const severityTitle = analysis.severity === 'severe' ? 'Deload Strongly Recommended' :
+                                 analysis.severity === 'moderate' ? 'Consider a Deload' : 'Recovery May Be Needed';
+            
+            deloadAnalysis.innerHTML = `
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">${severityIcon}</div>
+                    <h3 style="font-size: 1.5rem; font-weight: bold; color: ${severityColor}; margin-bottom: 1rem;">
+                        ${severityTitle}
+                    </h3>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+                    <div style="background: rgba(255, 255, 255, 0.05); border-radius: 0.5rem; padding: 1rem;">
+                        <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.75rem; color: ${severityColor};">
+                            Why You Need Recovery:
+                        </h4>
+                        <ul style="list-style-type: disc; list-style-position: inside; color: rgba(255, 255, 255, 0.9); font-size: 0.875rem; line-height: 1.6;">
+                            ${analysis.reasons.map(reason => `<li style="margin-bottom: 0.5rem;">${reason}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div style="background: rgba(255, 255, 255, 0.05); border-radius: 0.5rem; padding: 1rem;">
+                        <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.75rem; color: #22c55e;">
+                            Recovery Strategies:
+                        </h4>
+                        <ul style="list-style-type: disc; list-style-position: inside; color: rgba(255, 255, 255, 0.9); font-size: 0.875rem; line-height: 1.6;">
+                            ${analysis.suggestions.map(suggestion => `<li style="margin-bottom: 0.5rem;">${suggestion}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    ${analysis.affectedLifts.length > 0 ? `
+                        <div style="background: rgba(255, 255, 255, 0.05); border-radius: 0.5rem; padding: 1rem;">
+                            <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.75rem; color: #c084fc;">
+                                Affected Lifts:
+                            </h4>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                ${analysis.affectedLifts.map(lift => `
+                                    <span style="background: rgba(192, 132, 252, 0.2); border: 1px solid rgba(192, 132, 252, 0.3); 
+                                                 border-radius: 0.25rem; padding: 0.25rem 0.5rem; font-size: 0.875rem; text-transform: capitalize;">
+                                        ${lift}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 0.5rem; padding: 1rem; margin-top: 1.5rem;">
+                    <p style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.9); line-height: 1.6;">
+                        <strong>Remember:</strong> Deload weeks aren't setbacks - they're strategic recovery periods that allow for 
+                        better long-term progression. Many elite lifters deload every 3-4 weeks as part of their regular programming.
+                    </p>
+                </div>
+            `;
+        }
 
-  </script>
+        // Prepare chart data
+        function prepareChartData() {
+            const chartData = [];
+            
+            completedBlocks.forEach((block) => {
+                for (let weekNum = 1; weekNum <= 4; weekNum++) {
+                    chartData.push({
+                        week: `B${block.blockNumber}W${weekNum}`,
+                        blockNumber: block.blockNumber,
+                        weekNumber: weekNum,
+                        squat: weekNum === 4 ? block.lifts.squat.oldWeights?.week4 || null : null,
+                        bench: weekNum === 4 ? block.lifts.bench.oldWeights?.week4 || null : null,
+                        deadlift: weekNum === 4 ? block.lifts.deadlift.oldWeights?.week4 || null : null
+                    });
+                }
+            });
+            
+            for (let weekNum = 1; weekNum <= 4; weekNum++) {
+                const weekData = { 
+                    week: `B${currentBlock}W${weekNum}`,
+                    blockNumber: currentBlock,
+                    weekNumber: weekNum
+                };
+                
+                ['squat', 'bench', 'deadlift'].forEach(lift => {
+                    const week = trainingData[lift].weeks[weekNum - 1];
+                    const estimate = calculateWeeklyEstimated1RM(week);
+                    weekData[lift] = estimate > 0 ? estimate : null;
+                });
+                
+                chartData.push(weekData);
+            }
+            
+            return chartData;
+        }
+
+        // Render chart
+        function renderChart() {
+            const ctx = document.getElementById('progressChart');
+            const chartData = prepareChartData();
+            
+            // Destroy existing chart if it exists
+            if (progressChart) {
+                progressChart.destroy();
+            }
+            
+            // Prepare data for Chart.js
+            const labels = chartData.map(d => d.week);
+            const squatData = chartData.map(d => d.squat);
+            const benchData = chartData.map(d => d.bench);
+            const deadliftData = chartData.map(d => d.deadlift);
+            
+            progressChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Squat',
+                            data: squatData,
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#8b5cf6',
+                            pointBorderColor: '#8b5cf6',
+                            pointRadius: 4,
+                            tension: 0.1,
+                            spanGaps: false
+                        },
+                        {
+                            label: 'Bench',
+                            data: benchData,
+                            borderColor: '#06d6a0',
+                            backgroundColor: 'rgba(6, 214, 160, 0.1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#06d6a0',
+                            pointBorderColor: '#06d6a0',
+                            pointRadius: 4,
+                            tension: 0.1,
+                            spanGaps: false
+                        },
+                        {
+                            label: 'Deadlift',
+                            data: deadliftData,
+                            borderColor: '#f72585',
+                            backgroundColor: 'rgba(247, 37, 133, 0.1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#f72585',
+                            pointBorderColor: '#f72585',
+                            pointRadius: 4,
+                            tension: 0.1,
+                            spanGaps: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: 'rgba(71, 85, 105, 1)',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + (context.parsed.y ? context.parsed.y + ' kg' : 'No data');
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                font: {
+                                    size: 10
+                                },
+                                maxRotation: 45,
+                                minRotation: 45
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Weight (kg)',
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 </html>
