@@ -2,7 +2,6 @@ const CACHE_NAME = 'powerlifting-v1';
 const urlsToCache = [
     '/',
     'index.html',
-    'app.js',
     'manifest.json'
 ];
 
