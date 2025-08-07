@@ -5,13 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Block Periodization Powerlifting</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Theme colors for mobile browsers -->
+    <meta name="theme-color" content="#c084fc">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- SEO and Social Media -->
+    <meta name="description" content="Smart powerlifting program with RPE autoregulation and block periodization">
+    <meta property="og:title" content="Block Periodization App">
+    <meta property="og:description" content="Smart powerlifting program with RPE autoregulation">
+    <meta property="og:image" content="icon-512.png">
+    
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1e293b 0%, #7c3aed 50%, #1e293b 100%);
@@ -19,12 +36,10 @@
             padding: 1rem;
             color: white;
         }
-
         .container {
             max-width: 1400px;
             margin: 0 auto;
         }
-
         .card {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
@@ -33,7 +48,6 @@
             margin-bottom: 1.5rem;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-
         .header {
             display: flex;
             justify-content: space-between;
@@ -42,29 +56,24 @@
             gap: 1rem;
             margin-bottom: 1rem;
         }
-
         .header-title {
             display: flex;
             align-items: center;
             gap: 0.75rem;
         }
-
         .header-title h1 {
             font-size: 2rem;
             font-weight: bold;
         }
-
         .header-title p {
             color: #c084fc;
             font-size: 1rem;
         }
-
         .header-actions {
             display: flex;
             gap: 0.5rem;
             flex-wrap: wrap;
         }
-
         .btn {
             display: flex;
             align-items: center;
@@ -78,7 +87,6 @@
             transition: background-color 0.2s;
             text-decoration: none;
         }
-
         .btn-purple { background: #7c3aed; }
         .btn-purple:hover { background: #6d28d9; }
         .btn-blue { background: #2563eb; }
@@ -91,14 +99,12 @@
         .btn-yellow:hover { background: #a16207; }
         .btn-orange { background: #ea580c; }
         .btn-orange:hover { background: #c2410c; }
-
         .tabs {
             display: flex;
             gap: 0.5rem;
             margin-bottom: 1.5rem;
             flex-wrap: wrap;
         }
-
         .tab {
             padding: 0.5rem 1rem;
             border: none;
@@ -109,42 +115,34 @@
             transition: background-color 0.2s;
             background: rgba(255, 255, 255, 0.2);
         }
-
         .tab.active {
             background: #7c3aed;
         }
-
         .tab:hover:not(.active) {
             background: rgba(255, 255, 255, 0.3);
         }
-
         .lift-tabs {
             display: flex;
             gap: 0.5rem;
         }
-
         .deload-alert {
             border-radius: 1rem;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
             border: 1px solid;
         }
-
         .deload-alert.severe {
             background: rgba(239, 68, 68, 0.2);
             border-color: rgba(239, 68, 68, 0.5);
         }
-
         .deload-alert.moderate {
             background: rgba(251, 146, 60, 0.2);
             border-color: rgba(251, 146, 60, 0.5);
         }
-
         .deload-alert.mild {
             background: rgba(250, 204, 21, 0.2);
             border-color: rgba(250, 204, 21, 0.5);
         }
-
         .max-input {
             display: flex;
             align-items: center;
@@ -152,7 +150,6 @@
             margin-bottom: 1rem;
             flex-wrap: wrap;
         }
-
         .input {
             background: rgba(255, 255, 255, 0.2);
             color: white;
@@ -161,29 +158,24 @@
             padding: 0.5rem;
             font-size: 1rem;
         }
-
         .input:focus {
             outline: none;
             border-color: #7c3aed;
         }
-
         .input::placeholder {
             color: rgba(255, 255, 255, 0.6);
         }
-
         .weeks-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
         }
-
         .week-card {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 0.75rem;
             padding: 1rem;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-
         .week-title {
             text-align: center;
             font-size: 1.25rem;
@@ -191,7 +183,6 @@
             color: #c084fc;
             margin-bottom: 1rem;
         }
-
         .estimate-box {
             background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(251, 146, 60, 0.2) 100%);
             border: 1px solid rgba(251, 191, 36, 0.3);
@@ -200,36 +191,30 @@
             text-align: center;
             margin-bottom: 1rem;
         }
-
         .estimate-box.weekly {
             background: rgba(34, 197, 94, 0.2);
             border-color: rgba(34, 197, 94, 0.3);
         }
-
         .section-title {
             font-size: 1.1rem;
             font-weight: 600;
             margin-bottom: 0.75rem;
         }
-
         .field-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 0.5rem;
         }
-
         .field-input {
             width: 80px;
             padding: 0.25rem;
             text-align: center;
             font-size: 0.875rem;
         }
-
         .field-input.small {
             width: 60px;
         }
-
         .textarea {
             width: 100%;
             background: rgba(255, 255, 255, 0.2);
@@ -241,7 +226,6 @@
             resize: vertical;
             min-height: 60px;
         }
-
         .select {
             background: rgba(255, 255, 255, 0.2);
             color: white;
@@ -250,112 +234,95 @@
             padding: 0.25rem;
             font-size: 0.875rem;
         }
-
         .select option {
             background: #1e293b;
             color: white;
         }
-
         .history-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1rem;
         }
-
         .block-card {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 0.5rem;
             padding: 1rem;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-
         .chart-container {
             height: 400px;
             position: relative;
         }
-
         .rpe-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.875rem;
         }
-
         .rpe-table th,
         .rpe-table td {
             padding: 0.5rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         .rpe-table th {
             color: #c084fc;
             text-align: center;
         }
-
         .rpe-table td {
             color: rgba(255, 255, 255, 0.8);
             text-align: center;
         }
-
         .guide-text {
             color: rgba(255, 255, 255, 0.8);
             font-size: 0.875rem;
             line-height: 1.5;
         }
-
         .hidden {
             display: none !important;
         }
-
         .empty-state {
             text-align: center;
             padding: 3rem 0;
         }
-
         .empty-state svg {
             width: 4rem;
             height: 4rem;
             color: rgba(255, 255, 255, 0.3);
             margin-bottom: 1rem;
         }
-
         @media (max-width: 640px) {
             .header {
                 flex-direction: column;
                 align-items: stretch;
             }
-
             .header-actions {
                 justify-content: center;
             }
-
             .tabs {
                 justify-content: center;
             }
-
             .weeks-grid {
                 grid-template-columns: 1fr;
             }
-
             .field-input {
                 width: 60px;
             }
-
             .field-input.small {
                 width: 50px;
             }
         }
-
         .file-input {
             position: absolute;
             opacity: 0;
             width: 0;
             height: 0;
         }
+
+
+
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <div class="card">
             <div class="header">
                 <div class="header-title">
@@ -374,21 +341,6 @@
                     </div>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-purple" onclick="exportData()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="7,10 12,15 17,10"/>
-                            <line x1="12" y1="15" x2="12" y2="3"/>
-                        </svg>
-                        Backup
-                    </button>
-                    <label class="btn btn-blue" for="importFile">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
-                        </svg>
-                        Import
-                        <input type="file" id="importFile" class="file-input" accept=".json" onchange="importData(event)">
-                    </label>
                     <button class="btn btn-green hidden" id="completeBlockBtn" onclick="completeBlock()">
                         Complete Block
                     </button>
@@ -397,16 +349,12 @@
                     </button>
                 </div>
             </div>
-
-            <!-- Tabs -->
             <div class="tabs">
                 <button class="tab active" onclick="setActiveTab('training')">Training</button>
                 <button class="tab" onclick="setActiveTab('deload')">Recovery</button>
                 <button class="tab" onclick="setActiveTab('history')">History</button>
                 <button class="tab" onclick="setActiveTab('chart')">Progress</button>
             </div>
-
-            <!-- Deload Alert -->
             <div id="deloadAlert" class="deload-alert hidden">
                 <div style="display: flex; gap: 1rem; align-items: flex-start;">
                     <div id="deloadIcon" style="padding: 0.5rem; border-radius: 0.5rem; background: rgba(239, 68, 68, 0.3);">
@@ -423,18 +371,13 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Lift Selection (Training Tab Only) -->
             <div id="liftTabs" class="lift-tabs">
                 <button class="tab active" onclick="setSelectedLift('squat')">Squat</button>
                 <button class="tab" onclick="setSelectedLift('bench')">Bench</button>
                 <button class="tab" onclick="setSelectedLift('deadlift')">Deadlift</button>
             </div>
         </div>
-
-        <!-- Training Tab -->
         <div id="trainingTab">
-            <!-- Max Input -->
             <div class="card">
                 <div class="max-input">
                     <label style="font-weight: 500;">Starting <span id="liftLabel">Squat</span> Max:</label>
@@ -453,8 +396,6 @@
                     Block 1: Training max 140kg. Next block will start at 120kg (current Week 2 weight).
                 </p>
             </div>
-
-            <!-- Weeks Grid -->
             <div class="card">
                 <h2 id="programTitle" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem;">
                     Squat Program - Block 1
@@ -462,14 +403,9 @@
                 <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem; margin-bottom: 1.5rem;">
                     Complete all 4 weeks, then progress to the next block with updated training maxes
                 </p>
-                
-                <div class="weeks-grid" id="weeksGrid">
-                    <!-- Weeks will be populated by JavaScript -->
-                </div>
+                <div class="weeks-grid" id="weeksGrid"></div>
             </div>
         </div>
-
-        <!-- Deload Tab -->
         <div id="deloadTab" class="hidden">
             <div class="card">
                 <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">Recovery Analysis</h2>
@@ -478,8 +414,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- History Tab -->
         <div id="historyTab" class="hidden">
             <div class="card">
                 <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem;">Block Progression History</h2>
@@ -496,8 +430,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Chart Tab -->
         <div id="chartTab" class="hidden">
             <div class="card">
                 <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
@@ -506,19 +438,15 @@
                     </svg>
                     <h3 style="font-size: 1.25rem; font-weight: bold;">Strength Progression</h3>
                 </div>
-                
                 <div class="chart-container">
                     <canvas id="progressChart"></canvas>
                 </div>
-                
                 <div style="margin-top: 1rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.6);">
                     <p>📈 Chart shows estimated 1RM progression across all completed blocks and current training</p>
                     <p>💡 B1W1 = Block 1 Week 1, etc. Your next block Week 1 will start at previous block Week 2 weights</p>
                 </div>
             </div>
         </div>
-
-        <!-- RPE Reference (Training Tab Only) -->
         <div id="rpeReference">
             <div class="card">
                 <h3 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 1rem;">RPE Chart (% of 1RM)</h3>
@@ -545,8 +473,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Block Periodization Guide (Training Tab Only) -->
         <div id="blockGuide">
             <div class="card">
                 <h3 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 1rem;">Block Periodization Guide</h3>
@@ -566,7 +492,6 @@
             </div>
         </div>
     </div>
-
     <script>
         // RPE Chart Data
         const tuchschererChart = {
@@ -991,14 +916,14 @@
                             </div>
                             <div class="field-row">
                                 <span style="color: rgba(255, 255, 255, 0.8);">Actual RPE:</span>
-                                <select value="${week.topSingle.actualRpe || ''}" class="select field-input"
+                                <select class="select field-input"
                                         onchange="updateWeight('${selectedLift}', ${weekIndex}, 'topSingle', 'actualRpe', this.value)">
-                                    <option value="">Select</option>
-                                    <option value="6">RPE 6</option>
-                                    <option value="7">RPE 7</option>
-                                    <option value="8">RPE 8</option>
-                                    <option value="9">RPE 9</option>
-                                    <option value="10">RPE 10</option>
+                                    <option value="" ${!week.topSingle.actualRpe ? 'selected' : ''}>Select</option>
+                                    <option value="6" ${week.topSingle.actualRpe == 6 ? 'selected' : ''}>RPE 6</option>
+                                    <option value="7" ${week.topSingle.actualRpe == 7 ? 'selected' : ''}>RPE 7</option>
+                                    <option value="8" ${week.topSingle.actualRpe == 8 ? 'selected' : ''}>RPE 8</option>
+                                    <option value="9" ${week.topSingle.actualRpe == 9 ? 'selected' : ''}>RPE 9</option>
+                                    <option value="10" ${week.topSingle.actualRpe == 10 ? 'selected' : ''}>RPE 10</option>
                                 </select>
                             </div>
                             ${week.topSingle.weight > 0 && week.topSingle.actualReps && week.topSingle.actualRpe ? `
@@ -1059,14 +984,14 @@
                             </div>
                             <div class="field-row">
                                 <span style="color: rgba(255, 255, 255, 0.8);">Actual RPE:</span>
-                                <select value="${week.backoff.actualRpe || ''}" class="select field-input"
+                                <select class="select field-input"
                                         onchange="updateWeight('${selectedLift}', ${weekIndex}, 'backoff', 'actualRpe', this.value)">
-                                    <option value="">Select</option>
-                                    <option value="6">RPE 6</option>
-                                    <option value="7">RPE 7</option>
-                                    <option value="8">RPE 8</option>
-                                    <option value="9">RPE 9</option>
-                                    <option value="10">RPE 10</option>
+                                    <option value="" ${!week.backoff.actualRpe ? 'selected' : ''}>Select</option>
+                                    <option value="6" ${week.backoff.actualRpe == 6 ? 'selected' : ''}>RPE 6</option>
+                                    <option value="7" ${week.backoff.actualRpe == 7 ? 'selected' : ''}>RPE 7</option>
+                                    <option value="8" ${week.backoff.actualRpe == 8 ? 'selected' : ''}>RPE 8</option>
+                                    <option value="9" ${week.backoff.actualRpe == 9 ? 'selected' : ''}>RPE 9</option>
+                                    <option value="10" ${week.backoff.actualRpe == 10 ? 'selected' : ''}>RPE 10</option>
                                 </select>
                             </div>
                             ${week.backoff.weight > 0 && week.backoff.actualReps && week.backoff.actualRpe ? `
@@ -1337,65 +1262,7 @@
         }
 
         // Export data
-        function exportData() {
-            const exportObj = {
-                trainingData,
-                currentBlock,
-                completedBlocks,
-                selectedLift,
-                activeTab,
-                exportDate: new Date().toISOString(),
-                programName: "Block Periodization Powerlifting Template",
-                version: "1.0"
-            };
-            
-            const dataStr = JSON.stringify(exportObj, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `powerlifting-backup-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        }
-
-        // Import data
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    
-                    if (importedData.trainingData && importedData.currentBlock !== undefined) {
-                        trainingData = importedData.trainingData;
-                        currentBlock = importedData.currentBlock;
-                        completedBlocks = importedData.completedBlocks || [];
-                        if (importedData.selectedLift) selectedLift = importedData.selectedLift;
-                        if (importedData.activeTab) activeTab = importedData.activeTab;
-                        
-                        updateUI();
-                        renderWeeks();
-                        updateCompleteBlockButton();
-                        saveData();
-                        
-                        alert('Data imported successfully!');
-                    } else {
-                        alert('Invalid backup file format.');
-                    }
-                } catch (error) {
-                    alert('Error reading backup file.');
-                }
-            };
-            reader.readAsText(file);
-            
-            // Reset the input
-            event.target.value = '';
-        }
+        
 
         // Render history tab
         function renderHistory() {
@@ -1524,7 +1391,7 @@
                     <div style="background: rgba(255, 255, 255, 0.05); border-radius: 0.5rem; padding: 1rem;">
                         <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.75rem; color: ${severityColor};">
                             Why You Need Recovery:
-                        </h4>
+                                                                                                                                                                                                                                                                                             </h4>
                         <ul style="list-style-type: disc; list-style-position: inside; color: rgba(255, 255, 255, 0.9); font-size: 0.875rem; line-height: 1.6;">
                             ${analysis.reasons.map(reason => `<li style="margin-bottom: 0.5rem;">${reason}</li>`).join('')}
                         </ul>
@@ -1719,7 +1586,7 @@
                             }
                         }
                     }
-                }
+                },
             });
         }
 
