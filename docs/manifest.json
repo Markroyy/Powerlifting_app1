@@ -2,7 +2,7 @@
     "name": "Powerlifting Tracker",
     "short_name": "Powerlifting",
     "description": "Block periodization powerlifting training tracker",
-    "start_url": "/",
+    "start_url": ".",
     "display": "standalone",
     "background_color": "#0f172a",
     "theme_color": "#6366f1",
