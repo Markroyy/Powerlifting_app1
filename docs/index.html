@@ -227,13 +227,22 @@
             min-height: 60px;
         }
         .select {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 0.5rem;
-            padding: 0.25rem;
-            font-size: 0.875rem;
-        }
+             background: rgba(255, 255, 255, 0.2);
+              color: white;
+              border: 1px solid rgba(255, 255, 255, 0.3);
+              border-radius: 0.5rem;
+              padding: 0.25rem;
+              font-size: 0.875rem;
+              -webkit-appearance: none;
+              -moz-appearance: none;
+              appearance: none;
+               background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="white" d="M2 0L0 2h4zM2 5L0 3h4z"/></svg>');
+                background-repeat: no-repeat;
+                 background-position: right 0.5rem center;
+                background-size: 0.8rem;
+                padding-right: 2rem;
+}
+        
         .select option {
             background: #1e293b;
             color: white;
@@ -289,33 +298,62 @@
             color: rgba(255, 255, 255, 0.3);
             margin-bottom: 1rem;
         }
-        @media (max-width: 640px) {
-            .header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .header-actions {
-                justify-content: center;
-            }
-            .tabs {
-                justify-content: center;
-            }
-            .weeks-grid {
-                grid-template-columns: 1fr;
-            }
-            .field-input {
-                width: 60px;
-            }
-            .field-input.small {
-                width: 50px;
-            }
-        }
-        .file-input {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+    @media (max-width: 640px) {
+    body {
+        padding: 0.5rem;
+    }
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .header-title {
+        align-self: flex-start;
+        width: 100%;
+    }
+    .header-title h1 {
+        font-size: 1.5rem;
+    }
+    .header-actions {
+        justify-content: center;
+        width: 100%;
+        margin-top: 1rem;
+    }
+    .tabs {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .weeks-grid {
+        grid-template-columns: 1fr;
+    }
+    .field-input {
+        width: 60px;
+    }
+    .field-input.small {
+        width: 50px;
+    }
+    .card {
+        padding: 1rem;
+    }
+    .max-input {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    .max-input label {
+        margin-bottom: 0.25rem;
+    }
+    .week-card {
+        padding: 0.75rem;
+    }
+    .field-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+    .field-row span {
+        font-size: 0.8rem;
+    }
+}
 
 
 
@@ -324,7 +362,7 @@
 <body>
     <div class="container">
         <div class="card">
-            <div class="header">
+            <div class="header"> 
                 <div class="header-title">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2">
                         <path d="m6.5 6.5 11 11"/>
@@ -647,6 +685,7 @@
             
             if (estimates.length === 0) return 0;
             
+
             if (estimates.length === 2) {
                 return Math.round(((estimates[0] * 0.7) + (estimates[1] * 0.3)) * 2) / 2;
             }
@@ -829,19 +868,29 @@
             renderWeeks();
             saveData();
         }
-
-        // Update weight field
+        
         function updateWeight(lift, weekIndex, exercise, field, value) {
-            if (field === 'weight') {
-                trainingData[lift].weeks[weekIndex][exercise][field] = parseFloat(value) || 0;
-            } else {
-                trainingData[lift].weeks[weekIndex][exercise][field] = parseInt(value) || 0;
+    if (field === 'weight') {
+        trainingData[lift].weeks[weekIndex][exercise][field] = parseFloat(value) || 0;
+    } else {
+        trainingData[lift].weeks[weekIndex][exercise][field] = parseInt(value) || 0;
+    }
+    
+    // Force the dropdown to show the selected value
+    if (field === 'actualRpe') {
+        setTimeout(() => {
+            const selectElement = event.target;
+            if (selectElement && value) {
+                selectElement.value = value;
             }
-            renderWeeks();
-            updateDeloadAnalysis();
-            updateCompleteBlockButton();
-            saveData();
-        }
+        }, 10);
+    }
+    
+    renderWeeks();
+    updateDeloadAnalysis();
+    updateCompleteBlockButton();
+    saveData();
+}
 
         // Update notes
         function updateNotes(lift, weekIndex, value) {
@@ -1115,35 +1164,96 @@
                     const targetWeek1Weight = calculateWeight(currentMax, 7, 1);
                     const baseNewMax = Math.round((targetWeek1Weight / tuchschererChart[1][6]) / 2.5) * 2.5;
                     
-                    let liftProgressionFactor = 1.0;
-                    switch(lift) {
-                        case 'squat':
-                            liftProgressionFactor = 1.035;
-                            break;
-                        case 'bench':
-                            liftProgressionFactor = 1.015;
-                            break;
-                        case 'deadlift':
-                            liftProgressionFactor = 1.04;
-                            break;
+                  let liftProgressionFactor = 1.0;
+
+                  switch(lift) {
+  
+                    case 'squat':
+      
+                    liftProgressionFactor = 1.025;  // ~5-7.5kg per block
+       
+                    break;
+   
+                    case 'bench':
+        
+                    liftProgressionFactor = 1.015;  // ~2.5-5kg per block  
+       
+                    break;
+    
+                    case 'deadlift':
+        
+                    liftProgressionFactor = 1.025;  // ~5-7.5kg per block
+       
+                    break;
+
+                }
+                    
+                  let adjustmentFactor = 1.0; // Start with no change as baseline
+
+
+                  if (avgRPEVariance > 0.3) {
+  
+                    // RPEs running high - reduce or maintain training max
+  
+                    if (avgRPEVariance > 1.2) {
+   
+                        // Very high RPEs - significant reduction
+   
+                        adjustmentFactor = 0.90;
+  
+                    } else if (avgRPEVariance > 0.8) {
+  
+                        // High RPEs - moderate reduction  
+
+                        adjustmentFactor = 0.95;
+
+
+                    } else if (avgRPEVariance > 0.5) {
+
+                        // Moderately high RPEs - small reduction
+
+                        adjustmentFactor = 0.98;
+
+                    } else {
+   
+                        // Slightly high RPEs - maintain weight
+
+
+
+                        adjustmentFactor = 1.0;
+  
                     }
-                    
-                    let adjustmentFactor = liftProgressionFactor;
-                    if (avgRPEVariance > 0.3) {
-                        if (avgRPEVariance > 1.0) {
-                            adjustmentFactor = 0.95;
-                        } else if (avgRPEVariance > 0.7) {
-                            adjustmentFactor = 0.98;
-                        } else {
-                            adjustmentFactor = 1.0;
-                        }
-                    } else if (avgRPEVariance < -0.3) {
-                        const extraProgression = Math.abs(avgRPEVariance) * 0.01;
-                        adjustmentFactor = liftProgressionFactor + extraProgression;
+
+                } else if (avgRPEVariance < -0.3) {
+
+                    // RPEs running low - can progress normally or more
+
+                    if (avgRPEVariance < -0.7) {
+   
+                        // Very easy - extra progression
+
+                        adjustmentFactor = liftProgressionFactor * 1.1;
+
+                    } else {
+    
+                        // Moderately easy - normal progression
+     
+                        adjustmentFactor = liftProgressionFactor;
+
                     }
-                    
-                    newTrainingMax = Math.round((baseNewMax * adjustmentFactor) / 2.5) * 2.5;
-                    
+
+                } else {
+
+                    // RPEs on target (-0.3 to +0.3) - normal progression
+  
+                    adjustmentFactor = liftProgressionFactor;
+
+                }
+
+
+                // Calculate new max based on Week 2 weight (not current max)
+
+                newTrainingMax = Math.round((baseNewMax * adjustmentFactor) / 2.5) * 2.5;
                     let maxIncrease, maxDecrease;
                     switch(lift) {
                         case 'squat':
@@ -1237,33 +1347,75 @@
             updateCompleteBlockButton();
             saveData();
         }
-
-        // Reset program
-        function resetProgram() {
-            if (!confirm('Reset all data? This cannot be undone!')) return;
-
-            trainingData = createInitialData();
-            currentBlock = 1;
-            completedBlocks = [];
-            selectedLift = 'squat';
-            activeTab = 'training';
-            
-            // Clear localStorage
-            localStorage.removeItem('powerlifting-training-data');
-            localStorage.removeItem('powerlifting-current-block');
-            localStorage.removeItem('powerlifting-completed-blocks');
-            localStorage.removeItem('powerlifting-selected-lift');
-            localStorage.removeItem('powerlifting-active-tab');
-            
-            updateUI();
-            renderWeeks();
-            updateCompleteBlockButton();
-            saveData();
-        }
-
-        // Export data
+  
+function analyzeConsistency(rpeGroups) {
+    const analysis = {};
+    
+    Object.keys(rpeGroups).forEach(rpe => {
+        const estimates = rpeGroups[rpe];
+        if (estimates.length < 2) return;
         
+        const avg = estimates.reduce((a,b) => a+b) / estimates.length;
+        const variance = estimates.map(e => Math.pow(e - avg, 2)).reduce((a,b) => a+b) / estimates.length;
+        const stdDev = Math.sqrt(variance);
+        
+        analysis[rpe] = {
+            avgEstimate: avg.toFixed(1),
+            consistency: stdDev < 5 ? 'Excellent' : 
+                        stdDev < 10 ? 'Good' : 
+                        stdDev < 15 ? 'Fair' : 'Needs Work',
+            variance: stdDev.toFixed(1),
+            sessionCount: estimates.length
+        };
+    });
+    
+    return analysis;
+}
 
+function resetProgram() {
+    if (!confirm('Reset back to Block 1? (keeps all historical chart data)')) return;
+
+    // Preserve current maxes and history
+    const currentMaxes = {
+        squat: trainingData.squat.currentMax,
+        bench: trainingData.bench.currentMax,
+        deadlift: trainingData.deadlift.currentMax
+    };
+    
+    // Keep completed blocks history for charts
+    const preservedBlocks = [...completedBlocks];
+    
+    // Create fresh Block 1 training data with current maxes
+    trainingData = createInitialData();
+    
+    // Restore the current maxes
+    Object.keys(currentMaxes).forEach(lift => {
+        trainingData[lift].currentMax = currentMaxes[lift];
+        // Recalculate weights based on preserved maxes
+        trainingData[lift].weeks = trainingData[lift].weeks.map(week => ({
+            ...week,
+            topSingle: {
+                ...week.topSingle,
+                weight: calculateWeight(currentMaxes[lift], week.topSingle.rpe, 1)
+            },
+            backoff: {
+                ...week.backoff,
+                weight: calculateWeight(currentMaxes[lift], week.backoff.rpe, week.backoff.reps)
+            }
+        }));
+    });
+    
+    // Restore completed blocks for chart data
+    completedBlocks = preservedBlocks;
+    
+    // Reset to Block 1
+    currentBlock = 1;
+    
+    updateUI();
+    renderWeeks();
+    updateCompleteBlockButton();
+    saveData();
+}
         // Render history tab
         function renderHistory() {
             const historyContent = document.getElementById('historyContent');
@@ -1432,6 +1584,45 @@
             `;
         }
 
+
+
+
+
+        function resetEverything() {
+    if (!confirm('COMPLETELY reset ALL data including history? This cannot be undone!')) return;
+    if (!confirm('Are you absolutely sure? This will delete ALL your progression history and charts!')) return;
+    if (!confirm('Last chance - this will permanently delete everything. Continue?')) return;
+
+    // Reset all data to initial state
+    trainingData = createInitialData();
+    currentBlock = 1;
+    completedBlocks = [];
+    selectedLift = 'squat';
+    activeTab = 'training';
+    
+    // Clear ALL localStorage
+    localStorage.removeItem('powerlifting-training-data');
+    localStorage.removeItem('powerlifting-current-block');
+    localStorage.removeItem('powerlifting-completed-blocks');
+    localStorage.removeItem('powerlifting-selected-lift');
+    localStorage.removeItem('powerlifting-active-tab');
+    
+    // Destroy chart if it exists
+    if (progressChart) {
+        progressChart.destroy();
+        progressChart = null;
+    }
+    
+    updateUI();
+    renderWeeks();
+    updateCompleteBlockButton();
+    saveData();
+    
+    alert('All data has been completely reset!');
+}
+
+
+
         // Prepare chart data
         function prepareChartData() {
             const chartData = [];
@@ -1499,7 +1690,7 @@
                             pointBorderColor: '#8b5cf6',
                             pointRadius: 4,
                             tension: 0.1,
-                            spanGaps: false
+                            spanGaps: true
                         },
                         {
                             label: 'Bench',
@@ -1511,7 +1702,7 @@
                             pointBorderColor: '#06d6a0',
                             pointRadius: 4,
                             tension: 0.1,
-                            spanGaps: false
+                            spanGaps: true
                         },
                         {
                             label: 'Deadlift',
@@ -1523,7 +1714,7 @@
                             pointBorderColor: '#f72585',
                             pointRadius: 4,
                             tension: 0.1,
-                            spanGaps: false
+                            spanGaps: true
                         }
                     ]
                 },
