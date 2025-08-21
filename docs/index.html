@@ -84,7 +84,12 @@
             color: white;
             font-size: 0.875rem;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition:
+    background-color 0.15s,
+    color 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.10s;
             text-decoration: none;
         }
         .btn-purple { background: #7c3aed; }
@@ -353,10 +358,50 @@
     .field-row span {
         font-size: 0.8rem;
     }
+    
+}
+.rpe-btn-group {
+    display: flex;
+    gap: 0.25rem;
+    margin-top: 0.1rem;
+    margin-bottom: 0.1rem;
 }
 
+.rpe-btn {
+    background: linear-gradient(135deg, #ede9fe 0%, #c7d2fe 100%);
+    border: 1.5px solid #a78bfa;
+    color: #7c3aed;
+    border-radius: 0.35rem;
+    padding: 0.12rem 0.5rem;
+    font-size: 0.92rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 
+        background 0.15s, 
+        color 0.15s, 
+        border-color 0.15s, 
+        box-shadow 0.15s, 
+        transform 0.10s;
+    outline: none;
+    box-shadow: 0 1px 4px 0 rgba(124, 58, 237, 0.08);
+    margin-bottom: 0.1rem;
+}
 
+.rpe-btn.selected,
+.rpe-btn:active {
+    background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+    color: #fff;
+    border-color: #7c3aed;
+    box-shadow: 0 2px 8px 0 rgba(124, 58, 237, 0.12);
+    transform: scale(1.04);
+}
 
+.rpe-btn:hover:not(.selected) {
+    background: linear-gradient(135deg, #c7d2fe 0%, #a78bfa 100%);
+    color: #4c1d95;
+    border-color: #a78bfa;
+    transform: scale(1.02);
+}
     </style>
 </head>
 <body>
@@ -986,15 +1031,14 @@
                             </div>
                             <div class="field-row">
                                 <span style="color: rgba(255, 255, 255, 0.8);">Actual RPE:</span>
-                                <select class="select field-input"
-                                        onchange="updateWeight('${selectedLift}', ${weekIndex}, 'topSingle', 'actualRpe', this.value)">
-                                    <option value="" ${!week.topSingle.actualRpe ? 'selected' : ''}>Select</option>
-                                    <option value="6" ${week.topSingle.actualRpe == 6 ? 'selected' : ''}>RPE 6</option>
-                                    <option value="7" ${week.topSingle.actualRpe == 7 ? 'selected' : ''}>RPE 7</option>
-                                    <option value="8" ${week.topSingle.actualRpe == 8 ? 'selected' : ''}>RPE 8</option>
-                                    <option value="9" ${week.topSingle.actualRpe == 9 ? 'selected' : ''}>RPE 9</option>
-                                    <option value="10" ${week.topSingle.actualRpe == 10 ? 'selected' : ''}>RPE 10</option>
-                                </select>
+                                <div class="rpe-btn-group">
+    ${[6,7,8,9,10].map(rpeVal => `
+        <button type="button"
+            class="rpe-btn${week.topSingle.actualRpe == rpeVal ? ' selected' : ''}"
+            onclick="updateWeight('${selectedLift}', ${weekIndex}, 'topSingle', 'actualRpe', ${rpeVal})"
+        >${rpeVal}</button>
+    `).join('')}
+</div>
                             </div>
                             ${week.topSingle.weight > 0 && week.topSingle.actualReps && week.topSingle.actualRpe ? `
                                 <div class="field-row" style="background: rgba(250, 204, 21, 0.1); padding: 0.5rem; border-radius: 0.25rem; border: 1px solid rgba(250, 204, 21, 0.2);">
@@ -1054,16 +1098,14 @@
                             </div>
                             <div class="field-row">
                                 <span style="color: rgba(255, 255, 255, 0.8);">Actual RPE:</span>
-                                <select class="select field-input"
-                                        onchange="updateWeight('${selectedLift}', ${weekIndex}, 'backoff', 'actualRpe', this.value)">
-                                    <option value="" ${!week.backoff.actualRpe ? 'selected' : ''}>Select</option>
-                                    <option value="6" ${week.backoff.actualRpe == 6 ? 'selected' : ''}>RPE 6</option>
-                                    <option value="7" ${week.backoff.actualRpe == 7 ? 'selected' : ''}>RPE 7</option>
-                                    <option value="8" ${week.backoff.actualRpe == 8 ? 'selected' : ''}>RPE 8</option>
-                                    <option value="9" ${week.backoff.actualRpe == 9 ? 'selected' : ''}>RPE 9</option>
-                                    <option value="10" ${week.backoff.actualRpe == 10 ? 'selected' : ''}>RPE 10</option>
-                                </select>
-                            </div>
+                               <div class="rpe-btn-group">
+    ${[6,7,8,9,10].map(rpeVal => `
+        <button type="button"
+            class="rpe-btn${week.backoff.actualRpe == rpeVal ? ' selected' : ''}"
+            onclick="updateWeight('${selectedLift}', ${weekIndex}, 'backoff', 'actualRpe', ${rpeVal})"
+        >${rpeVal}</button>
+    `).join('')}
+</div>
                             ${week.backoff.weight > 0 && week.backoff.actualReps && week.backoff.actualRpe ? `
                                 <div class="field-row" style="font-size: 0.875rem;">
                                     <span style="color: rgba(255, 255, 255, 0.8);">Est. 1RM:</span>
@@ -1518,7 +1560,7 @@ function resetEverything() {
                                                 };">
                                                     ${data.avgRPEVariance > 0 ? '+' : ''}${data.avgRPEVariance.toFixed(1)} RPE
                                                 </span>
-                                                <span style="color: rgba(255, 255, 255, 0.5); margin-left: 0.25rem;">
+                                                <span style="color: rgba(255, 255, 255, 255, 0.5); margin-left: 0.25rem;">
                                                     (${Math.abs(data.avgRPEVariance) < 0.3 ? 'On target' : 
                                                       data.avgRPEVariance > 0 ? 'Running hard' : 'Running easy'})
                                                 </span>
@@ -1529,7 +1571,7 @@ function resetEverything() {
                                                 Block ${block.blockNumber}: ${data.oldWeights.week1}→${data.oldWeights.week2}→${data.oldWeights.week3}→${data.oldWeights.week4}kg
                                             </div>
                                         ` : ''}
-                                        <div style="font-size: 0.75rem; color: rgba(34, 197, 94, 0.6); padding-left: 0.5rem;">
+                                        <div style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.6); padding-left: 0.5rem;">
                                             Block ${block.blockNumber + 1}: ${data.newWeights.week1}→${data.newWeights.week2}→${data.newWeights.week3}→${data.newWeights.week4}kg
                                         </div>
                                     </div>
@@ -1644,8 +1686,6 @@ function resetEverything() {
 
 
 
-
-
         function resetEverything() {
     if (!confirm('COMPLETELY reset ALL data including history? This cannot be undone!')) return;
     
@@ -1680,166 +1720,168 @@ function resetEverything() {
 
 
 
-        // Prepare chart data
-        function prepareChartData() {
-            const chartData = [];
-            
-            completedBlocks.forEach((block) => {
-                for (let weekNum = 1; weekNum <= 4; weekNum++) {
-                    chartData.push({
-                        week: `B${block.blockNumber}W${weekNum}`,
-                        blockNumber: block.blockNumber,
-                        weekNumber: weekNum,
-                        squat: weekNum === 4 ? block.lifts.squat.oldWeights?.week4 || null : null,
-                        bench: weekNum === 4 ? block.lifts.bench.oldWeights?.week4 || null : null,
-                        deadlift: weekNum === 4 ? block.lifts.deadlift.oldWeights?.week4 || null : null
-                    });
-                }
-            });
-            
-            for (let weekNum = 1; weekNum <= 4; weekNum++) {
-                const weekData = { 
-                    week: `B${currentBlock}W${weekNum}`,
-                    blockNumber: currentBlock,
-                    weekNumber: weekNum
-                };
-                
-                ['squat', 'bench', 'deadlift'].forEach(lift => {
-                    const week = trainingData[lift].weeks[weekNum - 1];
-                    const estimate = calculateWeeklyEstimated1RM(week);
-                    weekData[lift] = estimate > 0 ? estimate : null;
-                });
-                
-                chartData.push(weekData);
-            }
-            
-            return chartData;
-        }
+        // Prepare chart data for week-to-week tracking
+function prepareChartData() {
+    const chartData = [];
+    let weekCounter = 1;
 
-        // Render chart
-        function renderChart() {
-            const ctx = document.getElementById('progressChart');
-            const chartData = prepareChartData();
-            
-            // Destroy existing chart if it exists
-            if (progressChart) {
-                progressChart.destroy();
-            }
-            
-            // Prepare data for Chart.js
-            const labels = chartData.map(d => d.week);
-            const squatData = chartData.map(d => d.squat);
-            const benchData = chartData.map(d => d.bench);
-            const deadliftData = chartData.map(d => d.deadlift);
-            
-            progressChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Squat',
-                            data: squatData,
-                            borderColor: '#8b5cf6',
-                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                            borderWidth: 2,
-                            pointBackgroundColor: '#8b5cf6',
-                            pointBorderColor: '#8b5cf6',
-                            pointRadius: 4,
-                            tension: 0.1,
-                            spanGaps: true
-                        },
-                        {
-                            label: 'Bench',
-                            data: benchData,
-                            borderColor: '#06d6a0',
-                            backgroundColor: 'rgba(6, 214, 160, 0.1)',
-                            borderWidth: 2,
-                            pointBackgroundColor: '#06d6a0',
-                            pointBorderColor: '#06d6a0',
-                            pointRadius: 4,
-                            tension: 0.1,
-                            spanGaps: true
-                        },
-                        {
-                            label: 'Deadlift',
-                            data: deadliftData,
-                            borderColor: '#f72585',
-                            backgroundColor: 'rgba(247, 37, 133, 0.1)',
-                            borderWidth: 2,
-                            pointBackgroundColor: '#f72585',
-                            pointBorderColor: '#f72585',
-                            pointRadius: 4,
-                            tension: 0.1,
-                            spanGaps: true
-                        }
-                    ]
+    // Add all completed blocks' weeks in order
+    completedBlocks.forEach((block) => {
+        ['squat', 'bench', 'deadlift'].forEach(lift => {
+            block.lifts[lift].weeks = block.lifts[lift].weeks || [];
+        });
+        for (let weekNum = 1; weekNum <= 4; weekNum++) {
+            const weekLabel = `Week ${weekCounter}`;
+            chartData.push({
+                week: weekLabel,
+                squat: block.lifts.squat.oldWeights ? block.lifts.squat.oldWeights[`week${weekNum}`] : null,
+                bench: block.lifts.bench.oldWeights ? block.lifts.bench.oldWeights[`week${weekNum}`] : null,
+                deadlift: block.lifts.deadlift.oldWeights ? block.lifts.deadlift.oldWeights[`week${weekNum}`] : null
+            });
+            weekCounter++;
+        }
+    });
+
+    // Add current block's weeks
+    for (let weekNum = 1; weekNum <= 4; weekNum++) {
+        const weekLabel = `Week ${weekCounter}`;
+        const weekData = { week: weekLabel };
+        ['squat', 'bench', 'deadlift'].forEach(lift => {
+            const week = trainingData[lift].weeks[weekNum - 1];
+            const estimate = calculateWeeklyEstimated1RM(week);
+            weekData[lift] = estimate > 0 ? estimate : null;
+        });
+        chartData.push(weekData);
+        weekCounter++;
+    }
+
+    return chartData;
+}
+
+// Render chart
+function renderChart() {
+    const ctx = document.getElementById('progressChart');
+    const chartData = prepareChartData();
+    
+    // Destroy existing chart if it exists
+    if (progressChart) {
+        progressChart.destroy();
+    }
+    
+    // Prepare data for Chart.js
+    const labels = chartData.map(d => d.week);
+    const squatData = chartData.map(d => d.squat);
+    const benchData = chartData.map(d => d.bench);
+    const deadliftData = chartData.map(d => d.deadlift);
+    
+    progressChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Squat',
+                    data: squatData,
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#8b5cf6',
+                    pointBorderColor: '#8b5cf6',
+                    pointRadius: 4,
+                    tension: 0.1,
+                    spanGaps: true
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: 'white',
-                                font: {
-                                    size: 12
-                                }
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
-                            titleColor: 'white',
-                            bodyColor: 'white',
-                            borderColor: 'rgba(71, 85, 105, 1)',
-                            borderWidth: 1,
-                            callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': ' + (context.parsed.y ? context.parsed.y + ' kg' : 'No data');
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            ticks: {
-                                color: 'rgba(255, 255, 255, 0.8)',
-                                font: {
-                                    size: 10
-                                },
-                                maxRotation: 45,
-                                minRotation: 45
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        },
-                        y: {
-                            ticks: {
-                                color: 'rgba(255, 255, 255, 0.8)',
-                                font: {
-                                    size: 10
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            title: {
-                                display: true,
-                                text: 'Weight (kg)',
-                                color: 'rgba(255, 255, 255, 0.8)',
-                                font: {
-                                    size: 12
-                                }
-                            }
+                {
+                    label: 'Bench',
+                    data: benchData,
+                    borderColor: '#06d6a0',
+                    backgroundColor: 'rgba(6, 214, 160, 0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#06d6a0',
+                    pointBorderColor: '#06d6a0',
+                    pointRadius: 4,
+                    tension: 0.1,
+                    spanGaps: true
+                },
+                {
+                    label: 'Deadlift',
+                    data: deadliftData,
+                    borderColor: '#f72585',
+                    backgroundColor: 'rgba(247, 37, 133, 0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#f72585',
+                    pointBorderColor: '#f72585',
+                    pointRadius: 4,
+                    tension: 0.1,
+                    spanGaps: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'white',
+                        font: {
+                            size: 12
                         }
                     }
                 },
-            });
-        }
+                tooltip: {
+                    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                    titleColor: 'white',
+                    bodyColor: 'white',
+                    borderColor: 'rgba(71, 85, 105, 1)',
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + (context.parsed.y ? context.parsed.y + ' kg' : 'No data');
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        font: {
+                            size: 10
+                        },
+                        maxRotation: 45,
+                        minRotation: 45
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        font: {
+                            size: 10
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Weight (kg)',
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            }
+        },
+    });
+}
 
-        // Initialize app when DOM is loaded
-        document.addEventListener('DOMContentLoaded', init);
+// Initialize app when DOM is loaded
+document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
