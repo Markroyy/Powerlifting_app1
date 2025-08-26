@@ -436,7 +436,7 @@
             </div>
             <div class="tabs">
                 <button class="tab active" onclick="setActiveTab('training')">Training</button>
-                <button class="tab" onclick="setActiveTab('deload')">Recovery</button>
+                
                 <button class="tab" onclick="setActiveTab('history')">History</button>
                 <button class="tab" onclick="setActiveTab('chart')">Progress</button>
             </div>
@@ -450,9 +450,9 @@
                     <div style="flex: 1;">
                         <h3 id="deloadTitle" style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.5rem;">Deload Recommended</h3>
                         <div id="deloadContent" style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.9);"></div>
-                        <button class="btn btn-red" onclick="setActiveTab('deload')" style="margin-top: 0.75rem;">
-                            View Recovery Plan →
-                        </button>
+                        <button class="btn btn-red" onclick="deloadAlertDismissed = true; updateDeloadAnalysis();" style="margin-top: 0.75rem;">
+    Dismiss Alert
+</button>
                     </div>
                 </div>
             </div>
@@ -481,6 +481,7 @@
                 <button class="tab" onclick="setSelectedLift('deadlift')">Deadlift</button>
             </div>
         </div>
+        
         <div id="trainingTab">
             <div class="card">
                 <div class="max-input">
@@ -507,6 +508,14 @@
                 <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.875rem; margin-bottom: 1.5rem;">
                     Complete all 4 weeks, then progress to the next block with updated training maxes
                 </p>
+                <div id="blockAverageE1RMBox" class="estimate-box weekly" style="margin-bottom: 1.5rem; display: none;">
+        <div style="color: #22c55e; font-size: 0.95rem; font-weight: 500;">Block Average E1RM</div>
+        <div id="blockAverageE1RMValue" style="color: #16a34a; font-size: 1.3rem; font-weight: bold;"></div>
+        <div style="color: rgba(34, 197, 94, 0.8); font-size: 0.85rem;">(Used for autoregulation and progression)</div>
+    </div>
+    <!-- END BLOCK -->
+    <div class="weeks-grid" id="weeksGrid"></div>
+</div>
                 <div class="weeks-grid" id="weeksGrid"></div>
             </div>
         </div>
@@ -618,6 +627,7 @@
         let completedBlocks = [];
         let activeTab = 'training';
         let progressChart = null;
+        let deloadAlertDismissed = false;
 
         // Initialize app
         function init() {
@@ -896,6 +906,7 @@
 
         // Set active tab
         function setActiveTab(tab) {
+             if (tab === 'deload') deloadAlertDismissed = true;
             activeTab = tab;
             updateUI();
             saveData();
@@ -997,12 +1008,7 @@
                         </div>
                     ` : ''}
                     
-                    ${weeklyEstimate > 0 ? `
-                        <div class="estimate-box weekly">
-                            <div style="color: #22c55e; font-size: 0.875rem; font-weight: 500;">Week Average</div>
-                            <div style="color: #16a34a; font-size: 1.125rem; font-weight: bold;">${weeklyEstimate} kg</div>
-                        </div>
-                    ` : ''}
+                   
 
                     <div style="margin-bottom: 1.5rem;">
                         <h4 class="section-title">Top Single</h4>
@@ -1127,15 +1133,31 @@
                 
                 weeksGrid.appendChild(weekCard);
             });
+            renderBlockAverageE1RM();
         }
 
+
+        function renderBlockAverageE1RM() {
+    const weeks = trainingData[selectedLift].weeks;
+    const weeklyE1RMs = weeks.map(week => calculateWeeklyEstimated1RM(week)).filter(e1rm => e1rm > 0);
+    const box = document.getElementById('blockAverageE1RMBox');
+    const value = document.getElementById('blockAverageE1RMValue');
+    if (!box || !value) return;
+    if (weeklyE1RMs.length === 0) {
+        box.style.display = 'none';
+        return;
+    }
+    const avgE1RM = Math.round((weeklyE1RMs.reduce((a, b) => a + b, 0) / weeklyE1RMs.length) / 2.5) * 2.5;
+    value.textContent = `${avgE1RM} kg`;
+    box.style.display = '';
+}
         // Update deload analysis
         function updateDeloadAnalysis() {
             const analysis = analyzeDeloadNeed();
             const deloadAlert = document.getElementById('deloadAlert');
             
-            if (activeTab === 'training' && analysis.needsDeload) {
-                deloadAlert.classList.remove('hidden');
+            if (activeTab === 'training' && analysis.needsDeload && !deloadAlertDismissed) {  // Change this line
+        deloadAlert.classList.remove('hidden');
                 deloadAlert.className = `deload-alert ${analysis.severity}`;
                 
                 const title = analysis.severity === 'severe' ? '🛑 Deload Strongly Recommended' :
@@ -1404,6 +1426,7 @@
             
             trainingData = newTrainingData;
             currentBlock = currentBlock + 1;
+            deloadAlertDismissed = false; 
             
             updateUI();
             renderWeeks();
